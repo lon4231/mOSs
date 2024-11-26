@@ -29,17 +29,20 @@ init_acpi();
 
 init_pcie();
 
+for (UINTN e=0;e<mcfg_entry_count;++e)
+{
 for(UINTN i=0;i<256;++i)
 {
 for(UINTN n=0;n<32;++n)
 {
 for(UINTN j=0;j<8;++j)
 {
-pci_entry_t entry=get_pci_entry(mcfg_entries[0].base_address,i,n,j);
+pci_entry_t entry=get_pci_entry(mcfg_entries[e].base_address,i,n,j);
 
 if(entry.vendor_id==0xFFFF){continue;}
 
-printf(u"%x %x %x\r\n",entry.vendor_id,entry.device_id,entry.class_code);
+printf(u"0x%x 0x%x 0x%x 0x%x 0x%x\r\n",entry.vendor_id,entry.device_id,entry.class_code,entry.subclass,entry.revision_id);
+}
 }
 }
 }

@@ -2,9 +2,7 @@ OS := $(shell uname)
 
 ifeq ($(OS), Linux)
     MAKEFILE:= tools/Makefile.l
-endif
-
-ifeq ($(OS), MINGW32_NT)
+else
     MAKEFILE:= tools/Makefile.w
 endif
 
