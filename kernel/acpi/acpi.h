@@ -15,6 +15,15 @@ for (UINTN i=0;i<entry_count;++i)
 {
 acpi_header_t*entry=(acpi_header_t*)entries[i];
 printf(u"ACPI entry %d: %c%c%c%c\r\n",i,entry->Signature[0],entry->Signature[1],entry->Signature[2],entry->Signature[3]);
+
+if(strcmp(entry->Signature,"FACP",4)==0)
+{fadt=(fadt_t*)entry;}
+
+if(strcmp(entry->Signature,"APIC",4)==0)
+{madt=(madt_t*)entry;}
+
+if(strcmp(entry->Signature,"MCFG",4)==0)
+{mcfg=(mcfg_t*)entry;}
 }
 
 

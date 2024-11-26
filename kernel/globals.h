@@ -12,6 +12,11 @@ static alloc_context_t alloc_context;
 static xsdp_t*         xsdp;
 static fadt_t*         fadt;
 static madt_t*         madt;
+static mcfg_t*         mcfg;
+
+static mcfg_entry_t*   mcfg_entries;
+static UINTN           mcfg_entry_count;
+
 
 static CHAR16*tty_buffer;
 static bool*tty_changed_buffer;

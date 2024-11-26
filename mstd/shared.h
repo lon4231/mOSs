@@ -315,3 +315,28 @@ UINT32 creatorRev;
 UINT8 reserved[12];
 } __attribute__((packed));
 
+struct mcfg_entry_t
+{
+UINT64 base_address;
+UINT16 group_number;
+UINT8  pci_start;
+UINT8  pci_end;
+UINT32 reserved;
+};
+
+struct mcfg_t
+{
+acpi_header_t header;
+UINT64	      reserved;
+};
+
+struct pci_entry_t
+{
+uint16_t vendor_id;
+uint16_t device_id;
+uint8_t class_code;
+uint8_t subclass;
+uint8_t prog_if;
+uint8_t revision_id;
+uint32_t bar[6];
+};

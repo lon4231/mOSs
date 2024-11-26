@@ -6,6 +6,7 @@
 #include "acpi/acpi.h"
 #include "interrupts/interrupts.h"
 #include "keyboard/kb.h"
+#include "pci/pcie.h"
 
 extern "C" __attribute__((section(".kernel"))) void kmain(kernel_args_t args)
 {
@@ -21,16 +22,32 @@ init_idt();
 
 init_keyboard();
 
-printf(u"[ MOSS_TTY 0.1V    ]\r\n");
+printf(u"[     MOSS_TTY     ]\r\n");
 printf(u"[ current: %03dx%03d ]\r\n",tty_w,tty_h);
 
 init_acpi();
 
-while (true)
+init_pcie();
+
+for(UINTN i=0;i<256;++i)
 {
-key_t key=get_key();
-CHAR16 str[2]={(key.UnicodeChar==0)?' ':key.UnicodeChar,u'\0'};
-printf(u"%02x %s %04x\r\n",key.ScanCode,str,key.UnicodeChar);
+for(UINTN n=0;n<32;++n)
+{
+for(UINTN j=0;j<8;++j)
+{
+pci_entry_t entry=get_pci_entry(mcfg_entries[0].base_address,i,n,j);
+
+if(entry.vendor_id==0xFFFF){continue;}
+
+printf(u"%x %x %x\r\n",entry.vendor_id,entry.device_id,entry.class_code);
+}
+}
+}
+
+while(true)
+{
+
+
 }
 
 
