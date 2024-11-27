@@ -19,7 +19,7 @@ memset(sgi.buffer,0,sgi.w*sgi.h*4);
 void init_tty()
 {
 tty_w=sgi.w/8;
-tty_h=sgi.h/8;
+tty_h=sgi.h/16;
 
 tty_buffer=(CHAR16*)mmap_allocate_pages(SIZE_TO_PAGES(tty_w*tty_h*2));
 tty_changed_buffer=(bool*)mmap_allocate_pages(SIZE_TO_PAGES(tty_w*tty_h));
@@ -69,18 +69,17 @@ break;
 
 void _draw_char(UINTN chr_x,UINTN chr_y,CHAR16 chr)
 {
-int x,y;
-int set;
-int mask;
-for(y=0;y<8;y++) 
+static int x,y;
+static int set=0;
+for(y=0;y<16;y++) 
 {
-for(x=0;x<8;x++) 
+for(x=8;x>0;--x) 
 {
 set=font[chr][y]&1<<x;
 if(set)
-{sgi.buffer[(chr_x+x)+(chr_y+y)*sgi.w]=0xDDDDDDDD;}
+{sgi.buffer[((chr_x+8)-x)+(chr_y+y)*sgi.w]=0xDDDDDDDD;}
 else
-{sgi.buffer[(chr_x+x)+(chr_y+y)*sgi.w]=0;}
+{sgi.buffer[((chr_x+8)-x)+(chr_y+y)*sgi.w]=0;}
 }
 }
 }
@@ -91,7 +90,7 @@ for (UINTN i=0;i<tty_w*tty_h;++i)
 {
 if((tty_buffer[i]<256) && (tty_changed_buffer[i]==true))
 {
-_draw_char((i%tty_w)*8,(i/tty_w)*8,tty_buffer[i]);
+_draw_char((i%tty_w)*8,(i/tty_w)*16,tty_buffer[i]);
 tty_changed_buffer[i]=false;
 }
 }

@@ -40,8 +40,30 @@ mcfg_entry_t*entries=(mcfg_entry_t*)(((UINT8*)mcfg)+44);
 mcfg_entries=entries;
 mcfg_entry_count=table_size;
 
+}
 
-
+void print_pcie()
+{
+for(UINTN e=0;e<mcfg_entry_count;++e)
+{
+for(UINTN i=0;i<256;++i)
+{
+for(UINTN n=0;n<32;++n)
+{
+for(UINTN j=0;j<8;++j)
+{
+pci_entry_t entry=get_pci_entry(mcfg_entries[e].base_address,i,n,j);
+if(entry.vendor_id==0xFFFF){continue;}
+printf(u"[address: %08x] ",mcfg_entries[e].base_address+(i<<20)+(n<<15)+(j<<12));
+printf(u"[vendor id: 0x%04x] ",entry.vendor_id);
+printf(u"[device id: 0x%04x] ",entry.device_id);
+printf(u"[class_code: 0x%02x] ",entry.class_code);
+printf(u"[subclass code: 0x%02x] ",entry.subclass);
+printf(u"[revision: 0x%02x]\r\n\n",entry.revision_id);
+}
+}
+}
+}
 }
 
 UINT32 pci_read_config(UINT8 bus,UINT8 device,UINT8 function,UINT8 offset) 
