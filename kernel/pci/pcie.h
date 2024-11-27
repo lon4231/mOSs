@@ -4,6 +4,9 @@
 #include"globals.h"
 #include"printf.h"
 
+#define PCI_CONFIG_ADDRESS 0xCF8
+#define PCI_CONFIG_DATA    0xCFC
+
 #define PCI_CONFIG_SPACE_SIZE 256
 #define PCI_VENDOR_ID_OFFSET  0x00
 #define PCI_DEVICE_ID_OFFSET  0x02
@@ -41,13 +44,16 @@ mcfg_entry_count=table_size;
 
 }
 
-void write_pcie_register(UINT32*bar_address,UINT32 offset,UINT32 value) 
-{*(volatile UINT32*)(bar_address + offset) = value;}
-
-void send_command_to_pcie(UINT64 baseAddress,UINT8 bus,UINT8 device,UINT8 function,UINT32 command) 
+UINT32 pci_read_config(UINT8 bus,UINT8 device,UINT8 function,UINT8 offset) 
 {
-pci_entry_t entry=get_pci_entry(baseAddress,bus,device,function);
-UINT32*bar0_base=(UINT32*)entry.bar[0];
-write_pcie_register(bar0_base,0x10,command);
+UINT32 address=(1<<31)|(bus<<16)|(device<<11)|(function<<8)|(offset&0xFC);
+outl(PCI_CONFIG_ADDRESS,address);
+return inl(PCI_CONFIG_DATA);
 }
 
+void pci_write_config(UINT8 bus,UINT8 device,UINT8 function,UINT8 offset,UINT32 value) 
+{
+UINT32 address=(1<<31)|(bus<<16)|(device<<11)|(function<<8)|(offset&0xFC);
+outl(PCI_CONFIG_ADDRESS,address);
+outl(PCI_CONFIG_DATA,value);
+}
