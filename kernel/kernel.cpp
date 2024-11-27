@@ -7,7 +7,6 @@
 #include "interrupts/interrupts.h"
 #include "keyboard/kb.h"
 #include "pci/pcie.h"
-#include "ahci/ahci.h"
 
 extern "C" __attribute__((section(".kernel"))) void kmain(kernel_args_t args)
 {
