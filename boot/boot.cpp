@@ -2,6 +2,7 @@
 #include"helper.h"
 #include"printf.h"
 
+
 void load_kernel()
 {
 UINTN kernel_size;
@@ -10,6 +11,19 @@ void*kernel_buffer;
 kernel_args_t args;
 kernel_args_t*args_ptr=&args;
 alloc_context=&args.alloc_context;
+
+args.mmap=get_memory_map();
+
+args.sgi.buffer=(UINT32*)gop->Mode->FrameBufferBase;
+args.sgi.w=gop->Mode->Info->PixelsPerScanLine;
+args.sgi.h=gop->Mode->Info->VerticalResolution;
+args.alloc_context={nullptr,0,0,&args.mmap};
+
+args.krs=*((KERN_RUNTIME_SERVICES*)ers);
+
+xsdp_t*xsdp_ptr=(xsdp_t*)get_config_table_by_guid(EFI_ACPI_TABLE_GUID);
+
+args.xsdp=xsdp_ptr;
 
 {
 EFI_FILE_PROTOCOL*root;
@@ -28,20 +42,6 @@ kernel_file->Read(kernel_file,&kernel_size,kernel_buffer);
 kernel_file->Close(kernel_file);
 }
 
-
-args.mmap=get_memory_map();
-
-args.sgi.buffer=(UINT32*)gop->Mode->FrameBufferBase;
-args.sgi.w=gop->Mode->Info->PixelsPerScanLine;
-args.sgi.h=gop->Mode->Info->VerticalResolution;
-args.alloc_context={nullptr,0,0,&args.mmap};
-
-args.krs=*((KERN_RUNTIME_SERVICES*)ers);
-
-xsdp_t*xsdp_ptr=(xsdp_t*)get_config_table_by_guid(EFI_ACPI_TABLE_GUID);
-
-args.xsdp=xsdp_ptr;
-
 ebs->ExitBootServices(img_handle,args.mmap.key);
 
 pml4=(page_table_t*)mmap_allocate_pages(alloc_context,1);
@@ -50,7 +50,7 @@ memset(pml4,0,sizeof(page_table_t));
 identity_map_efi_mmap(&args.mmap);
 set_runtime_address_map(&args.mmap);
 
-for(UINTN i=0;i<kernel_pages+2;++i)
+for(UINTN i=0;i<kernel_pages+1;++i)
 {
 map_page((UINTN)kernel_buffer+(i*PAGE_SIZE),KERNEL_START_ADDRESS+(i*PAGE_SIZE),&args.mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
 }

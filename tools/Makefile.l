@@ -17,9 +17,11 @@ all:
 	$(ld) -nostdlib -T tools/kernel.ld --image-base=0 -pie -o kernel.obj kernel.o
 	objcopy -O binary kernel.obj kernel.bin
 	cp tools/config.bc ./ 
-	./tools/make_disk -i moss.iso -ae /EFI/BOOT/ kernel.bin /EFI/BOOT/ config.bc
+	cp tools\unifont.psf ./ 
+	
+	./tools/make_disk -i moss.iso -ae /EFI/BOOT/ kernel.bin /EFI/BOOT/ config.bc /EFI/BOOT/ unifont.psf
 	rm -rf kernel.bin kernel.o kernel.obj BOOTX64.EFI DSKIMG.INF config.bc
-	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin -m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime -net none
+	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin -m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime
 
 test:
-	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin -m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime -net none
+	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin -m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime

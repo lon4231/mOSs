@@ -226,6 +226,7 @@ best_size=(rows*columns);
 top->SetMode(top,best_mode);
 }
 
+
 /*post EFI stuff*/
 
 void*mmap_allocate_pages(alloc_context_t*alloc_context,UINTN pages)

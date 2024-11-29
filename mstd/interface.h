@@ -78,4 +78,5 @@ sgi_t                 sgi;
 alloc_context_t       alloc_context;
 KERN_RUNTIME_SERVICES krs;
 xsdp_t*               xsdp;
+
 };

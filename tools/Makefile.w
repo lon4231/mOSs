@@ -8,6 +8,8 @@ bldflags := -nostdlib -Wl,--subsystem,10 -e emain -w -ffreestanding
 kcflags := -std=c++20 -w -ffreestanding -mcmodel=large -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -O3 -Os -s 
 
 qemu := qemu-system-x86_64
+qemu_flags:=-m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime
+
 
 all:
 	$(clear_cmd)
@@ -17,9 +19,10 @@ all:
 	$(ld) -nostdlib -T tools/kernel.ld --image-base=0 -pie -o kernel.obj kernel.o
 	objcopy -O binary kernel.obj kernel.bin
 	copy tools\config.bc 
-	./tools/disk.exe -i moss.iso -ae /EFI/BOOT/ kernel.bin /EFI/BOOT/ config.bc
+	copy tools\unifont.psf 
+	./tools/disk.exe -i moss.iso -ae /EFI/BOOT/ kernel.bin /EFI/BOOT/ config.bc /EFI/BOOT/ unifont.psf
 	del kernel.bin kernel.o kernel.obj BOOTX64.EFI DSKIMG.INF config.bc
-	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin -m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime -net none
+	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin $(qemu_flags)
 
 test:
-	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin -m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime -net none
+	$(qemu) -drive format=raw,unit=0,file=moss.iso -bios tools/bios64.bin $(qemu_flags)

@@ -1,7 +1,7 @@
-ENTRY(kmain);
+ENTRY(driver_init);
 SECTIONS {    
     .text : {
-        KEEP(*(.kernel*));
+        KEEP(*(.driver*));
         *(.text*);
     }
     .data : {
