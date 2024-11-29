@@ -2,7 +2,7 @@
 
 #include "mstdi.h"
 #include "globals.h"
-#include "kprintf.h"
+#include "tty/kprintf.h"
 
 void init_acpi()
 {

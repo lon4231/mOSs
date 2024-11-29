@@ -36,7 +36,7 @@
 #include <stdint.h>
 
 #include "printf.h"
-#include "tty/tty.h"
+#include "tty.h"
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file

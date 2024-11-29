@@ -8,6 +8,7 @@ void load_kernel()
 UINTN kernel_size;
 UINTN kernel_pages;
 void*kernel_buffer;
+void*base_driver_buffer;
 kernel_args_t args;
 kernel_args_t*args_ptr=&args;
 alloc_context=&args.alloc_context;
@@ -25,22 +26,7 @@ xsdp_t*xsdp_ptr=(xsdp_t*)get_config_table_by_guid(EFI_ACPI_TABLE_GUID);
 
 args.xsdp=xsdp_ptr;
 
-{
-EFI_FILE_PROTOCOL*root;
-EFI_FILE_PROTOCOL*kernel_file;
-EFI_GUID info_guid=EFI_FILE_INFO_ID;
-EFI_FILE_INFO file_info;
-UINTN file_info_size=sizeof(EFI_FILE_INFO);
-fsp->OpenVolume(fsp,&root);
-root->Open(root,&kernel_file,u"\\EFI\\BOOT\\kernel.bin",EFI_FILE_MODE_READ,0);
-root->Close(root);
-kernel_file->GetInfo(kernel_file,&info_guid,&file_info_size,&file_info);
-kernel_size=file_info.FileSize;
-kernel_pages=SIZE_TO_PAGES(file_info.FileSize);
-ebs->AllocatePages(AllocateAnyPages,EfiLoaderCode,kernel_pages,(EFI_PHYSICAL_ADDRESS*)&kernel_buffer);
-kernel_file->Read(kernel_file,&kernel_size,kernel_buffer);
-kernel_file->Close(kernel_file);
-}
+load_file(u"\\EFI\\BOOT\\kernel.bin",&kernel_buffer,&kernel_size,&kernel_pages);
 
 ebs->ExitBootServices(img_handle,args.mmap.key);
 
@@ -50,10 +36,8 @@ memset(pml4,0,sizeof(page_table_t));
 identity_map_efi_mmap(&args.mmap);
 set_runtime_address_map(&args.mmap);
 
-for(UINTN i=0;i<kernel_pages+1;++i)
-{
-map_page((UINTN)kernel_buffer+(i*PAGE_SIZE),KERNEL_START_ADDRESS+(i*PAGE_SIZE),&args.mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
-}
+for(UINTN i=0;i<kernel_pages+2;++i)
+{map_page((UINTN)kernel_buffer+(i*PAGE_SIZE),KERNEL_START_ADDRESS+(i*PAGE_SIZE),&args.mmap,PAGE_PRESENT|PAGE_READWRITE);}
 
 for(UINTN i=0;i<(gop->Mode->FrameBufferSize+(PAGE_SIZE-1))/PAGE_SIZE;i++) 
 {identity_map_page(gop->Mode->FrameBufferBase+(i*PAGE_SIZE),&args.mmap);}
@@ -65,12 +49,10 @@ memset(kernel_stack,0,STACK_PAGES*PAGE_SIZE);
 for (UINTN i=0;i<STACK_PAGES;++i) 
 {identity_map_page((UINTN)kernel_stack+(i*PAGE_SIZE),&args.mmap);}
 
-
 tss_t tss={.io_map_base=sizeof(tss_t)};
 UINTN tss_address=(UINTN)&tss;
 
 gdt_t gdt;
-
 gdt.null.value          =0x0000000000000000;
 gdt.kernel_code_64.value=0x00AF9A000000FFFF;
 gdt.kernel_data_64.value=0x00CF92000000FFFF;
@@ -81,10 +63,7 @@ gdt.kernel_data_32.value=0x00CF92000000FFFF;
 gdt.user_code_32.value  =0x00CFFA000000FFFF;
 gdt.user_data_32.value  =0x00CFF2000000FFFF;
 
-
 gdt.tss.base_63_32=(tss_address>>32)&0xFFFFFFFF;
-
-
 gdt.tss.descriptor.limit_15_0=sizeof(tss_t)-1;
 gdt.tss.descriptor.base_15_0=tss_address&0xFFFF;
 gdt.tss.descriptor.base_23_16=(tss_address>>16)&0xFF;
@@ -145,14 +124,12 @@ fsp->OpenVolume(fsp,&root);
 root->Open(root,&file,u"\\EFI\\BOOT\\config.bc",EFI_FILE_MODE_READ,0);
 root->Close(root);
 file->GetInfo(file,&info_guid,&file_info_size,&file_info);
-
 file->Read(file,&file_info.FileSize,&boot_config_data);
 file->Close(file);
 gop->SetMode(gop,boot_config_data.gop_mode);
 top->Reset(top,true);
 set_max_top_mode();
 }
-
 
 top->ClearScreen(top);
 top->EnableCursor(top,false);
@@ -164,17 +141,13 @@ u"change boot config",
 u"shutdown          ",
 };
 
-
-
 UINTN default_attrib=top->Mode->Attribute;
-
 INT32 selected=0;
 while (true)
 {
 top->SetCursorPosition(top,0,0);
 top->SetAttribute(top,default_attrib);
 printf(u"SHROOMBOOT 0.1V\r\n");
-
 for (UINTN i=0;i<ARRAY_SIZE(boot_options);++i)
 {
 if(selected==i)
@@ -183,8 +156,6 @@ else
 {top->SetAttribute(top,default_attrib);}
 printf(u"%s\r\n",boot_options[i]);
 }
-
-
 EFI_INPUT_KEY key=get_key();
 if(key.ScanCode==0x1)
 {selected--;}
@@ -193,6 +164,7 @@ if(key.ScanCode==0x2)
 if(selected>=ARRAY_SIZE(boot_options)){selected=0;}
 if(key.UnicodeChar==0xD)
 {
+top->ClearScreen(top);
 switch(selected)
 {
 case 0:load_kernel();break;
@@ -202,9 +174,6 @@ default:break;
 }
 }
 }
-
-
-
 halt_machine();
 return 0;
 }

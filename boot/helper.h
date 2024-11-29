@@ -207,7 +207,6 @@ default:break;
 
 }
 
-
 void set_max_top_mode()
 {
 UINTN best_mode=0;
@@ -216,16 +215,29 @@ for (UINTN i=0;i<top->Mode->MaxMode;++i)
 {
 UINTN rows,columns;
 top->QueryMode(top,i,&columns,&rows);
-
 if((rows*columns)>best_size)
-{
-best_mode=i;
-best_size=(rows*columns);
-}
+{best_mode=i;best_size=(rows*columns);}
 }
 top->SetMode(top,best_mode);
 }
 
+void load_file(const CHAR16*path,void**buffer,UINTN*size,UINTN*pages)
+{
+EFI_FILE_PROTOCOL*root;
+EFI_FILE_PROTOCOL*file;
+EFI_GUID info_guid=EFI_FILE_INFO_ID;
+EFI_FILE_INFO file_info;
+UINTN file_info_size=sizeof(EFI_FILE_INFO);
+fsp->OpenVolume(fsp,&root);
+root->Open(root,&file,(CHAR16*)path,EFI_FILE_MODE_READ,0);
+root->Close(root);
+file->GetInfo(file,&info_guid,&file_info_size,&file_info);
+if(size!=nullptr){*size=file_info.FileSize;}
+if(pages!=nullptr){*pages=SIZE_TO_PAGES(file_info.FileSize);}
+ebs->AllocatePages(AllocateAnyPages,EfiLoaderCode,*pages,(EFI_PHYSICAL_ADDRESS*)buffer);
+file->Read(file,size,*buffer);
+file->Close(file);
+}
 
 /*post EFI stuff*/
 
@@ -297,7 +309,7 @@ pt->entries[pt_index]=(physical_address&PHYS_PAGE_ADDR_MASK)|flags;
 
 void identity_map_page(UINTN address,MEMORY_MAP_INFO*mmap)
 {
-map_page(address,address,mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
+map_page(address,address,mmap,PAGE_PRESENT|PAGE_READWRITE);
 }
 
 void identity_map_efi_mmap(MEMORY_MAP_INFO*mmap)
