@@ -3,9 +3,6 @@
 #include "mstd.h"
 #include "shared.h"
 
-struct kernel_args_t;
-struct base_driver_interface_t;
-
 typedef EFI_STATUS(EFIAPI*KERN_GET_VARIABLE)                                             (IN CHAR16*VariableName,IN KERN_GUID*VendorGuid,OUT UINT32*Attributes OPTIONAL,IN OUT UINTN*DataSize,OUT VOID*Data OPTIONAL);
 typedef EFI_STATUS(EFIAPI*KERN_GET_NEXT_VARIABLE_NAME)                                   (IN OUT UINTN*VariableNameSize,IN OUT CHAR16*VariableName,IN OUT KERN_GUID*VendorGuid);
 typedef EFI_STATUS(EFIAPI*KERN_SET_VARIABLE)                                             (IN CHAR16*VariableName,IN KERN_GUID*VendorGuid,IN UINT32 Attributes,IN UINTN DataSize,IN VOID*Data);
@@ -20,8 +17,6 @@ typedef VOID      (EFIAPI*KERN_RESET_SYSTEM)                                    
 typedef EFI_STATUS(EFIAPI*KERN_GET_NEXT_HIGH_MONO_COUNT)                                 (OUT UINT32*HighCount);
 typedef EFI_STATUS(EFIAPI*KERN_UPDATE_CAPSULE)                                           (IN KERN_CAPSULE_HEADER**CapsuleHeaderArray,IN UINTN CapsuleCount,OPTIONAL IN EFI_PHYSICAL_ADDRESS ScatterGatherList);
 typedef EFI_STATUS(EFIAPI*KERN_QUERY_CAPSULE_CAPABILITIES)                               (IN KERN_CAPSULE_HEADER**CapsuleHeaderArray,IN UINTN CapsuleCount,OUT UINT64*MaximumCapsuleSize,OUT KERN_RESET_TYPE*ResetType);
-
-typedef VOID      (*BASE_DRIVER_ENTRY_POINT)(kernel_args_t args,base_driver_interface_t*interface);
 
 struct KERN_RUNTIME_SERVICES
 {
@@ -76,20 +71,10 @@ UINTN           remaining_pages;
 MEMORY_MAP_INFO*mmap;
 };
 
-
-
-struct base_driver_interface_t
-{
-
-};
-
 struct kernel_args_t
 {
 MEMORY_MAP_INFO            mmap;
 sgi_t                      sgi;
 alloc_context_t            alloc_context;
 KERN_RUNTIME_SERVICES      krs;
-xsdp_t*                    xsdp;
-BASE_DRIVER_ENTRY_POINT    base_driver_base;
-base_driver_interface_t    base_driver;
 };

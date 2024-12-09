@@ -7,11 +7,13 @@ void load_kernel()
 {
 UINTN kernel_size;
 UINTN kernel_pages;
-void*kernel_buffer;
-void*base_driver_buffer;
+void* kernel_buffer;
+
 kernel_args_t args;
 kernel_args_t*args_ptr=&args;
 alloc_context=&args.alloc_context;
+
+load_file(u"\\EFI\\BOOT\\kernel.bin",&kernel_buffer,&kernel_size,&kernel_pages);
 
 args.mmap=get_memory_map();
 
@@ -21,12 +23,6 @@ args.sgi.h=gop->Mode->Info->VerticalResolution;
 args.alloc_context={nullptr,0,0,&args.mmap};
 
 args.krs=*((KERN_RUNTIME_SERVICES*)ers);
-
-xsdp_t*xsdp_ptr=(xsdp_t*)get_config_table_by_guid(EFI_ACPI_TABLE_GUID);
-
-args.xsdp=xsdp_ptr;
-
-load_file(u"\\EFI\\BOOT\\kernel.bin",&kernel_buffer,&kernel_size,&kernel_pages);
 
 ebs->ExitBootServices(img_handle,args.mmap.key);
 
@@ -39,10 +35,12 @@ set_runtime_address_map(&args.mmap);
 for(UINTN i=0;i<kernel_pages+2;++i)
 {map_page((UINTN)kernel_buffer+(i*PAGE_SIZE),KERNEL_START_ADDRESS+(i*PAGE_SIZE),&args.mmap,PAGE_PRESENT|PAGE_READWRITE);}
 
+
+
 for(UINTN i=0;i<(gop->Mode->FrameBufferSize+(PAGE_SIZE-1))/PAGE_SIZE;i++) 
 {identity_map_page(gop->Mode->FrameBufferBase+(i*PAGE_SIZE),&args.mmap);}
 
-const UINTN STACK_PAGES=16;  
+const UINTN STACK_PAGES=32;  
 void*kernel_stack=mmap_allocate_pages(alloc_context,STACK_PAGES);
 memset(kernel_stack,0,STACK_PAGES*PAGE_SIZE);
 

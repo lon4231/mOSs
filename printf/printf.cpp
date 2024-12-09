@@ -1,5 +1,3 @@
-#pragma once
-
 ///////////////////////////////////////////////////////////////////////////////
 // \author (c) Marco Paland (info@paland.com)
 //             2014-2019, PALANDesign Hannover, Germany
@@ -7,7 +5,7 @@
 // \license The MIT License (MIT)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
+// of this software and associated documentation files (the u"Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
@@ -16,7 +14,7 @@
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// THE SOFTWARE IS PROVIDED u"AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -36,7 +34,7 @@
 #include <stdint.h>
 
 #include "printf.h"
-#include "tty.h"
+
 
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
@@ -271,7 +269,7 @@ static size_t _ntoa_format(out_fct_type out, char16_t* buffer, size_t idx, size_
       buf[len++] = u'+';  // ignore the space if the u'+' exists
     }
     else if (flags & FLAGS_SPACE) {
-      buf[len++] = u'u';
+      buf[len++] = u' ';
     }
   }
 
@@ -456,7 +454,7 @@ static size_t _ftoa(out_fct_type out, char16_t* buffer, size_t idx, size_t maxle
       buf[len++] = u'+';  // ignore the space if the u'+' exists
     }
     else if (flags & FLAGS_SPACE) {
-      buf[len++] = u'u';
+      buf[len++] = u' ';
     }
   }
 
@@ -509,12 +507,12 @@ static size_t _etoa(out_fct_type out, char16_t* buffer, size_t idx, size_t maxle
     conv.F /= 10;
   }
 
-  // the exponent format is "%+03d" and largest value is "307", so set aside 4-5 characters
+  // the exponent format is u"%+03d" and largest value is u"307", so set aside 4-5 characters
   unsigned int minwidth = ((expval < 100) && (expval > -100)) ? 4U : 5U;
 
-  // in "%g" mode, "prec" is the number of *significant figures* not decimals
+  // in u"%g" mode, u"prec" is the number of *significant figures* not decimals
   if (flags & FLAGS_ADAPT_EXP) {
-    // do we want to fall-back to "%f" mode?
+    // do we want to fall-back to u"%f" mode?
     if ((value >= 1e-4) && (value < 1e6)) {
       if ((int)prec > expval) {
         prec = (unsigned)((int)prec - expval - 1);
@@ -607,7 +605,7 @@ static int _vsnprintf(out_fct_type out, char16_t* buffer, const size_t maxlen, c
         case u'0': flags |= FLAGS_ZEROPAD; format++; n = 1U; break;
         case u'-': flags |= FLAGS_LEFT;    format++; n = 1U; break;
         case u'+': flags |= FLAGS_PLUS;    format++; n = 1U; break;
-        case u'u': flags |= FLAGS_SPACE;   format++; n = 1U; break;
+        case u' ': flags |= FLAGS_SPACE;   format++; n = 1U; break;
         case u'#': flags |= FLAGS_HASH;    format++; n = 1U; break;
         default :                                   n = 0U; break;
       }
@@ -868,7 +866,6 @@ int printf_(const char16_t* format, ...)
   char16_t buffer[1];
   const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
   va_end(va);
-  draw_tty();
   return ret;
 }
 
