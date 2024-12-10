@@ -14,10 +14,8 @@ qemu_flags:=-m 2G -display sdl -name MOSS -machine q35 -usb -device usb-mouse -r
 
 
 all:
-	$(cc) printf/printf.cpp $(bcflags) $(bldflags) $(includes) -c -o printf.o
-
 	$(clear_cmd)
-	$(cc) boot/boot.cpp printf.o $(bcflags) $(bldflags) $(includes) -o BOOTX64.EFI
+	$(cc) boot/boot.cpp $(bcflags) $(bldflags) $(includes) -o BOOTX64.EFI
 
 	$(cc) kernel/kernel.cpp -c -nostdlib -ffreestanding -fPIE -o kernel.o $(includes) $(kcflags)
 	$(ld) -nostdlib -e kmain -T tools/kernel.ld --image-base=0 -pie kernel.o -o kernel.obj

@@ -15,7 +15,7 @@ EFI_LOADED_IMAGE_PROTOCOL*lip;
 EFI_HANDLE img_handle;
 page_table_t*pml4;
 alloc_context_t*alloc_context;
-boot_config_t boot_config_data;
+boot_config_t*boot_config_data;
 
 
 extern "C" void _putchar(CHAR16 character)
@@ -133,12 +133,8 @@ break;
 }
 }
 
-
-
-
 ebs->FreePool(available_modes);
 }
-
 
 void boot_config(UINTN default_attrib)
 {
@@ -177,7 +173,7 @@ if(key.UnicodeChar==0xD)
 switch (selected)
 {
 case 0:
-gop_config(&boot_config_data,default_attrib);
+gop_config(boot_config_data,default_attrib);
 break;
 
 case 1:
@@ -240,34 +236,6 @@ file->Close(file);
 }
 
 /*post EFI stuff*/
-
-void*mmap_allocate_pages(alloc_context_t*alloc_context,UINTN pages)
-{
-if (alloc_context->remaining_pages<pages)
-{
-UINTN i=alloc_context->current_descriptor+1;
-for (;i<alloc_context->mmap->size/alloc_context->mmap->desc_size;++i)
-{
-EFI_MEMORY_DESCRIPTOR*desc=(EFI_MEMORY_DESCRIPTOR*)((UINT8*)alloc_context->mmap->map+(i*alloc_context->mmap->desc_size));
-
-if (desc->Type==EfiConventionalMemory&&desc->NumberOfPages>=pages)
-{
-alloc_context->current_descriptor=i;
-alloc_context->remaining_pages=desc->NumberOfPages-pages;
-alloc_context->next_page_address=(void*)(desc->PhysicalStart+(pages*PAGE_SIZE));
-return (void*)desc->PhysicalStart;
-}
-}
-
-if (i>=alloc_context->mmap->size/alloc_context->mmap->desc_size)
-{return nullptr;}
-}
-
-alloc_context->remaining_pages-=pages;
-void*page=alloc_context->next_page_address;
-alloc_context->next_page_address=(void*)((UINT8*)page+(pages*PAGE_SIZE));
-return page;
-}
 
 
 void map_page(UINTN physical_address,UINTN virtual_address,MEMORY_MAP_INFO*mmap,int flags)

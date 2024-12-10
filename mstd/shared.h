@@ -38,7 +38,6 @@ MTMaxMemoryType
 };
 
 
-
 struct MEMORY_DESCRIPTOR_T
 {
 UINT32 Type;

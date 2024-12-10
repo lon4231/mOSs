@@ -3,6 +3,18 @@
 #include "mstd.h"
 #include "shared.h"
 
+enum DRIVER_TYPE
+{
+DRIVER_NULL,
+DRIVER_CPU,
+DRIVER_NETWORKING,
+DRIVER_SOUND,
+DRIVER_GRAPHICS,
+DRIVER_KEYBOARD,
+DRIVER_MOUSE,
+DRIVER_SPECIAL,
+};
+
 typedef EFI_STATUS(EFIAPI*KERN_GET_VARIABLE)                                             (IN CHAR16*VariableName,IN KERN_GUID*VendorGuid,OUT UINT32*Attributes OPTIONAL,IN OUT UINTN*DataSize,OUT VOID*Data OPTIONAL);
 typedef EFI_STATUS(EFIAPI*KERN_GET_NEXT_VARIABLE_NAME)                                   (IN OUT UINTN*VariableNameSize,IN OUT CHAR16*VariableName,IN OUT KERN_GUID*VendorGuid);
 typedef EFI_STATUS(EFIAPI*KERN_SET_VARIABLE)                                             (IN CHAR16*VariableName,IN KERN_GUID*VendorGuid,IN UINT32 Attributes,IN UINTN DataSize,IN VOID*Data);
@@ -37,9 +49,17 @@ KERN_QUERY_CAPSULE_CAPABILITIES  QueryCapsuleCapabilities;
 KERN_QUERY_VARIABLE_INFO         QueryVariableInfo;
 };
 
+struct driver_entry_t
+{
+UINT8        type;
+CHAR16       path[256];
+};
+
 struct boot_config_t
 {
 UINT32 gop_mode;
+UINT32 driver_count;
+driver_entry_t*entries;
 };
 
 struct key_t
@@ -77,4 +97,46 @@ MEMORY_MAP_INFO            mmap;
 sgi_t                      sgi;
 alloc_context_t            alloc_context;
 KERN_RUNTIME_SERVICES      krs;
+xsdt_t*                    xdst;
 };
+
+UINT64 get_mmap_usable_pages(MEMORY_MAP_INFO*mmap) 
+{
+UINT64 total_pages=0;
+for(UINTN i=0;i<mmap->size/mmap->desc_size;++i)
+{
+MEMORY_DESCRIPTOR_T*desc=(MEMORY_DESCRIPTOR_T*)((UINT8*)mmap->map+(i*mmap->desc_size));
+if(desc->Type==MTConventionalMemory)
+{total_pages+=desc->NumberOfPages;}
+}
+return total_pages;
+}
+
+void*mmap_allocate_pages(alloc_context_t*alloc_context,UINTN pages)
+{
+if (alloc_context->remaining_pages<pages)
+{
+UINTN i=alloc_context->current_descriptor+1;
+for (;i<alloc_context->mmap->size/alloc_context->mmap->desc_size;++i)
+{
+MEMORY_DESCRIPTOR_T*desc=(MEMORY_DESCRIPTOR_T*)((UINT8*)alloc_context->mmap->map+(i*alloc_context->mmap->desc_size));
+
+if (desc->Type==MTConventionalMemory&&desc->NumberOfPages>=pages)
+{
+alloc_context->current_descriptor=i;
+alloc_context->remaining_pages=desc->NumberOfPages-pages;
+alloc_context->next_page_address=(void*)(desc->PhysicalStart+(pages*PAGE_SIZE));
+return (void*)desc->PhysicalStart;
+}
+}
+
+if (i>=alloc_context->mmap->size/alloc_context->mmap->desc_size)
+{return nullptr;}
+}
+
+alloc_context->remaining_pages-=pages;
+void*page=alloc_context->next_page_address;
+alloc_context->next_page_address=(void*)((UINT8*)page+(pages*PAGE_SIZE));
+return page;
+}
+

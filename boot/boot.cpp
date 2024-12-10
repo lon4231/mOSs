@@ -1,6 +1,8 @@
 #include "mstdi.h"
 #include"helper.h"
-#include"printf.h"
+#include"printf.cpp"
+
+
 
 
 void load_kernel()
@@ -16,6 +18,8 @@ alloc_context=&args.alloc_context;
 load_file(u"\\EFI\\BOOT\\kernel.bin",&kernel_buffer,&kernel_size,&kernel_pages);
 
 args.mmap=get_memory_map();
+
+
 
 args.sgi.buffer=(UINT32*)gop->Mode->FrameBufferBase;
 args.sgi.w=gop->Mode->Info->PixelsPerScanLine;
@@ -122,9 +126,11 @@ fsp->OpenVolume(fsp,&root);
 root->Open(root,&file,u"\\EFI\\BOOT\\config.bc",EFI_FILE_MODE_READ,0);
 root->Close(root);
 file->GetInfo(file,&info_guid,&file_info_size,&file_info);
+ebs->AllocatePool(EfiLoaderData,file_info.FileSize,(void**)&boot_config_data);
 file->Read(file,&file_info.FileSize,&boot_config_data);
+boot_config_data->entries=(driver_entry_t*)(((CHAR8*)boot_config_data)+(sizeof(UINT32)*2));
 file->Close(file);
-gop->SetMode(gop,boot_config_data.gop_mode);
+gop->SetMode(gop,boot_config_data->gop_mode);
 top->Reset(top,true);
 set_max_top_mode();
 }
