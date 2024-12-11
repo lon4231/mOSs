@@ -13,9 +13,9 @@ EFI_GRAPHICS_OUTPUT_PROTOCOL*gop;
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL*fsp;
 EFI_LOADED_IMAGE_PROTOCOL*lip;
 EFI_HANDLE img_handle;
-page_table_t*pml4;
-alloc_context_t*alloc_context;
 boot_config_t*boot_config_data;
+page_table_t*   pml4;
+alloc_context_t*alloc_context;
 
 
 extern "C" void _putchar(CHAR16 character)
