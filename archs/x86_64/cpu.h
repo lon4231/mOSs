@@ -1,15 +1,15 @@
 #pragma once
 
-#define PIC1_COMMAND	0x20
-#define PIC1_DATA	    0x21
-#define PIC2_COMMAND	0xA0
-#define PIC2_DATA	    0xA1
-
-#define ICW4_8086	    0x01	
-#define ICW4_AUTO	    0x02	
-#define ICW4_BUF_SLAVE	0x08
-#define ICW4_BUF_MASTER	0x0C
-#define ICW4_SFNM	    0x10	
+#define PIC_COMMAND_MASTER 0x20
+#define PIC_COMMAND_SLAVE  0xA0
+#define PIC_DATA_MASTER    0x21
+#define PIC_DATA_SLAVE     0xA1
+#define ICW_1              0x11
+#define ICW_2_M            0x20
+#define ICW_2_S            0x28
+#define ICW_3_M            0x04
+#define ICW_3_S            0x02
+#define ICW_4              0x01
 
 enum CPUID_FEAT
 {
@@ -92,19 +92,41 @@ UINT8  inb(UINT16 port){UINT8  ret;asm volatile("inb %w1, %b0":"=a"(ret):"Nd"(po
 UINT16 inw(UINT16 port){UINT16 ret;asm volatile("inw %w1, %w0":"=a"(ret):"Nd"(port):"memory");return ret;}
 UINT32 inl(UINT16 port){UINT32 ret;asm volatile("inl %w1, %0" :"=a"(ret):"Nd"(port):"memory");return ret;}
 
-bool check_sse() 
-{
-UINT32 eax=0x1,ebx=0,ecx=0,edx=0;
-cpuid(1,&eax,&ebx,&ecx,&edx);
-return (edx>>25)&1;
-}
+void rdmsr(UINT32 msr,UINT32*lo,UINT32*hi)
+{asm volatile("rdmsr":"=a"(*lo),"=d"(*hi):"c"(msr));}
 
+void wrmsr(UINT32 msr,UINT32 lo,UINT32 hi)
+{asm volatile("wrmsr"::"a"(lo),"d"(hi),"c"(msr));}
 
 void enable_sse()
 {
-if(!check_sse())
-{return;}
+{
+UINT32 eax=0x1,ebx=0,ecx=0,edx=0;
+cpuid(1,&eax,&ebx,&ecx,&edx);
+if(!((edx>>25)&1)){return;}
+}
 
-asm volatile("mov %%cr0, %%rax;and $0xFFFB, %%ax;or  $2, %%eax;mov %%rax, %%cr0;mov %%cr4, %%rax;or  $0b11000000000, %%rax;mov %%rax, %%cr4;":::"rax");
-asm volatile("fninit;mov %%cr0, %%rax;or $0b100000, %%rax;mov %%rax, %%cr0;":::"rax");
+{
+UINT32 eax=0x1,ebx=0,ecx=0,edx=0;
+cpuid(1,&eax,&ebx,&ecx,&edx);
+if(!((edx>>24)&1)){return;}
+}
+
+asm volatile
+(
+"mov %%cr0,%%rax;"
+"and $0xFFFB,%%ax;"
+"or $2,%%eax;"
+"mov %%rax,%%cr0;"
+"mov %%cr4,%%rax;"
+"or $0b11000000000,%%rax;"
+"mov %%rax,%%cr4;":::"rax"
+);
+asm volatile
+(
+"fninit;"
+"mov %%cr0,%%rax;"
+"or $0b100000,%%rax;"
+"mov %%rax,%%cr0;":::"rax"
+);
 }

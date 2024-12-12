@@ -97,6 +97,7 @@ sgi_t                      sgi;
 alloc_context_t            alloc_context;
 KERN_RUNTIME_SERVICES      krs;
 xsdt_t*                    xdst;
+page_table_t*              pml4;
 };
 
 UINT64 get_mmap_usable_pages(MEMORY_MAP_INFO*mmap) 

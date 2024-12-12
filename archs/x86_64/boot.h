@@ -4,11 +4,12 @@
 #include "arch.h"
 #include "cpu.h"
 #include "helper.h"
-
+#include "vmem.h"
 
 
 void arch_setup_and_jump_to_kernel(MEMORY_MAP_INFO*mmap,void*kernel_buffer,UINTN kernel_pages)
 {
+
 kernel_args_t args;
 kernel_args_t*args_ptr=&args;
 args.mmap=*mmap;
@@ -23,11 +24,16 @@ args.krs=*((KERN_RUNTIME_SERVICES*)ers);
 pml4=(page_table_t*)mmap_allocate_pages(alloc_context,1);
 memset(pml4,0,sizeof(page_table_t));
 
+vmem_alloc_context=&args.alloc_context;
+vmem_pml4=pml4;
+vmem_ers=(KERN_RUNTIME_SERVICES*)ers;
+
+
 identity_map_efi_mmap(&args.mmap);
 set_runtime_address_map(&args.mmap);
 
 for(UINTN i=0;i<kernel_pages+2;++i)
-{map_page((UINTN)kernel_buffer+(i*PAGE_SIZE),KERNEL_START_ADDRESS+(i*PAGE_SIZE),&args.mmap,PAGE_PRESENT|PAGE_READWRITE);}
+{map_page((UINTN)kernel_buffer+(i*PAGE_SIZE),KERNEL_START_ADDRESS+(i*PAGE_SIZE),&args.mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);}
 
 
 

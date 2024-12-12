@@ -1,9 +1,11 @@
 #include "mstdi.h"
-
+#include "x86_64/kernel.h"
 
 extern "C" __attribute__((noreturn,section(".kernel"))) void kmain(kernel_args_t args)
 {
-memset(args.sgi.buffer,255,args.sgi.w*args.sgi.h*4);
+karch_init_and_setup(&args);
+
+
 
 
 halt_machine();
