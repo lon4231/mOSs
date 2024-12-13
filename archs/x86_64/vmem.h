@@ -2,10 +2,12 @@
 
 #include "mstdi.h"
 #include "arch.h"
+#include "globals.h"
 
 alloc_context_t*      vmem_alloc_context;
 page_table_t*         vmem_pml4;
 KERN_RUNTIME_SERVICES*vmem_ers;
+vmem_map_context_t*vmem_map_context;
 
 void map_page(UINTN physical_address,UINTN virtual_address,MEMORY_MAP_INFO*mmap,int flags)
 {
@@ -94,4 +96,14 @@ curr_runtime_desc++;
 }
 
 vmem_ers->SetVirtualAddressMap(runtime_mmap_size,mmap->desc_size,mmap->desc_version,runtime_mmap);
+}
+
+void*vmem_map_page(void*physical,UINTN pages)
+{
+for (UINTN i=0;i<pages;++i)
+{
+map_page((UINTN)physical+(i*PAGE_SIZE),vmem_map_context->offset+(vmem_map_context->page*(PAGE_SIZE)),vmem_alloc_context->mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
+vmem_map_context->page++;
+}
+return (((UINT8*)vmem_map_context->offset)+((vmem_map_context->page-pages)*PAGE_SIZE));
 }

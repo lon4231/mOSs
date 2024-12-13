@@ -3,9 +3,7 @@
 #include "mstdi.h"
 #include "arch.h"
 #include "cpu.h"
-
-static idt_desc_t idt[256];
-static idtr_t idtr;
+#include "globals.h"
 
 void idt_set_descriptor(UINT8 vector,void*isr,UINT8 flags) 
 {

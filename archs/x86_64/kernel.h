@@ -6,24 +6,24 @@
 #include "vmem.h"
 #include "idt.h"
 #include "acpi.h"
-#include "pic.h"
-
+#include "apic.h"
+#include "tty.h"
 
 
 void karch_init_and_setup(kernel_args_t*args)
 {
+kargs=args;
+xsdt=args->xdst;
 vmem_alloc_context=&args->alloc_context;
 vmem_pml4         =args->pml4;
 vmem_ers          =&args->krs;
+vmem_map_context=&args->vmem_context;
 
 enable_sse();
-
-init_acpi(args->xdst);
-
-init_pic();
+init_acpi();
+init_apic();
 init_idt();
 
-
-
+init_tty();
 
 }

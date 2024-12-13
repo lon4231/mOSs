@@ -24,18 +24,18 @@ args.krs=*((KERN_RUNTIME_SERVICES*)ers);
 pml4=(page_table_t*)mmap_allocate_pages(alloc_context,1);
 memset(pml4,0,sizeof(page_table_t));
 
+args.vmem_context={KERNEL_START_ADDRESS,0};
+
 vmem_alloc_context=&args.alloc_context;
 vmem_pml4=pml4;
 vmem_ers=(KERN_RUNTIME_SERVICES*)ers;
+vmem_map_context=&args.vmem_context;
 
 
 identity_map_efi_mmap(&args.mmap);
 set_runtime_address_map(&args.mmap);
 
-for(UINTN i=0;i<kernel_pages+2;++i)
-{map_page((UINTN)kernel_buffer+(i*PAGE_SIZE),KERNEL_START_ADDRESS+(i*PAGE_SIZE),&args.mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);}
-
-
+vmem_map_page(kernel_buffer,kernel_pages+2);
 
 for(UINTN i=0;i<(gop->Mode->FrameBufferSize+(PAGE_SIZE-1))/PAGE_SIZE;i++) 
 {identity_map_page(gop->Mode->FrameBufferBase+(i*PAGE_SIZE),&args.mmap);}

@@ -3,12 +3,10 @@
 #include "mstdi.h"
 #include "arch.h"
 #include "cpu.h"
+#include "globals.h"
 
-static madt_t*madt;
-static fadt_t*fadt;
-static srat_t*srat;
 
-void init_acpi(xsdt_t*xsdt)
+void init_acpi()
 {
 UINTN table_lenght=(xsdt->header.Length-sizeof(acpi_header_t))/sizeof(UINT64);
 

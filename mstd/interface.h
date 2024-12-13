@@ -77,14 +77,33 @@ UINTN           remaining_pages;
 MEMORY_MAP_INFO*mmap;
 };
 
+struct vmem_map_context_t
+{
+UINTN offset;
+UINTN page;
+};
+
 struct kernel_args_t
 {
 MEMORY_MAP_INFO            mmap;
 sgi_t                      sgi;
 alloc_context_t            alloc_context;
+vmem_map_context_t         vmem_context;
 KERN_RUNTIME_SERVICES      krs;
 xsdt_t*                    xdst;
 page_table_t*              pml4;
+};
+
+
+struct tty_context_t
+{
+UINTN       cursor_x;
+UINTN       cursor_y;
+UINTN       tty_w;
+UINTN       tty_h;
+CHAR16*     buffer;
+UINT8*      attrib;
+UINT8*      changed;
 };
 
 UINT64 get_mmap_usable_pages(MEMORY_MAP_INFO*mmap) 
