@@ -2,7 +2,7 @@ cc := x86_64-w64-mingw32-g++
 ld := ld
 clear_cmd:=cls 
 
-includes:= -Imstd -Iprintf
+includes:= -Imstd -Iprintf -Iarchs -Iboot
 
 bcflags := -std=c++20 -mno-red-zone -O3 -s -fno-stack-protector -mcmodel=large -mno-red-zone -mno-mmx -mno-sse -mno-sse2
 bldflags := -nostdlib -Wl,--subsystem,10 -e emain -w -ffreestanding

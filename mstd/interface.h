@@ -6,6 +6,7 @@
 enum DRIVER_TYPE
 {
 DRIVER_NULL,
+DRIVER_DISK,
 DRIVER_NETWORKING,
 DRIVER_SOUND,
 DRIVER_GRAPHICS,
@@ -59,20 +60,6 @@ struct boot_config_t
 UINT32 gop_mode;
 UINT32 driver_count;
 driver_entry_t*entries;
-};
-
-struct key_t
-{
-UINT8 ScanCode;
-CHAR16 UnicodeChar;
-};
-
-struct keymap_entry_t
-{
-key_t normal;
-key_t shifted;
-key_t alt_gr;
-UINT8 flags;
 };
 
 struct sgi_t
