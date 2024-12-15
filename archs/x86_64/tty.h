@@ -3,6 +3,7 @@
 #include "mstdi.h"
 #include "arch.h"
 #include "cpu.h"
+#include "vmem.h"
 #include "globals.h"
 #include "printf.cpp"
 
@@ -298,8 +299,13 @@ tty_context.tty_h=kargs->sgi.h/8;
 tty_context.current_attrib=0x07;
 
 tty_context.buffer=(CHAR16*)mmap_allocate_pages(&kargs->alloc_context,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(CHAR16)));
+tty_context.buffer=(CHAR16*)vmem_map_page(vmem_context,tty_context.buffer,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(CHAR16)));
+
 tty_context.attrib=(UINT8* )mmap_allocate_pages(&kargs->alloc_context,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(UINT8)));
+tty_context.attrib=(UINT8*)vmem_map_page(vmem_context,tty_context.attrib,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(UINT8)));
+
 tty_context.changed=(UINT8*)mmap_allocate_pages(&kargs->alloc_context,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(UINT8)));
+tty_context.changed=(UINT8*)vmem_map_page(vmem_context,tty_context.changed,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(UINT8)));
 
 memset(tty_context.buffer,'\0',tty_context.tty_w*tty_context.tty_h*sizeof(CHAR16));
 memset(tty_context.attrib,0x0F,tty_context.tty_w*tty_context.tty_h);

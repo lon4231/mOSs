@@ -173,11 +173,11 @@ UINT32 flags;
 
 struct gas_t
 {
-  UINT8 AddressSpace;
-  UINT8 BitWidth;
-  UINT8 BitOffset;
-  UINT8 AccessSize;
-  UINT64 Address;
+UINT8 AddressSpace;
+UINT8 BitWidth;
+UINT8 BitOffset;
+UINT8 AccessSize;
+UINT64 Address;
 };
 
 struct fadt_t

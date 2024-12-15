@@ -13,6 +13,7 @@ static fadt_t*fadt;
 static srat_t*srat;
 
 static kernel_args_t*kargs;
+static vmem_context_t*vmem_context;
 
 static tty_context_t tty_context;
 

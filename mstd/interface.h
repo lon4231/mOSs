@@ -83,15 +83,24 @@ UINTN offset;
 UINTN page;
 };
 
+struct vmem_context_t
+{
+alloc_context_t*      vmem_alloc_context;
+page_table_t*         vmem_pml4;
+KERN_RUNTIME_SERVICES*vmem_ers;
+vmem_map_context_t    vmem_map_context;
+};
+
 struct kernel_args_t
 {
 MEMORY_MAP_INFO            mmap;
 sgi_t                      sgi;
 alloc_context_t            alloc_context;
-vmem_map_context_t         vmem_context;
+vmem_context_t             vmem_context;
 KERN_RUNTIME_SERVICES      krs;
 xsdt_t*                    xdst;
 page_table_t*              pml4;
+
 };
 
 

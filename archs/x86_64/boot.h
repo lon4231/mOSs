@@ -24,28 +24,29 @@ args.krs=*((KERN_RUNTIME_SERVICES*)ers);
 pml4=(page_table_t*)mmap_allocate_pages(alloc_context,1);
 memset(pml4,0,sizeof(page_table_t));
 
-args.vmem_context={KERNEL_START_ADDRESS,0};
 
-vmem_alloc_context=&args.alloc_context;
-vmem_pml4=pml4;
-vmem_ers=(KERN_RUNTIME_SERVICES*)ers;
-vmem_map_context=&args.vmem_context;
+args.vmem_context.vmem_alloc_context=&args.alloc_context;
+args.vmem_context.vmem_pml4=pml4;
+args.vmem_context.vmem_map_context={KERNEL_START_ADDRESS,0};
+args.vmem_context.vmem_ers=(KERN_RUNTIME_SERVICES*)ers;
 
 
-identity_map_efi_mmap(&args.mmap);
-set_runtime_address_map(&args.mmap);
+identity_map_efi_mmap(&args.vmem_context,&args.mmap);
+set_runtime_address_map(&args.vmem_context,&args.mmap);
 
-vmem_map_page(kernel_buffer,kernel_pages*2);
+vmem_map_page(&args.vmem_context,kernel_buffer,kernel_pages*2);
+
+
 
 for(UINTN i=0;i<(gop->Mode->FrameBufferSize+(PAGE_SIZE-1))/PAGE_SIZE;i++) 
-{identity_map_page(gop->Mode->FrameBufferBase+(i*PAGE_SIZE),&args.mmap);}
+{identity_map_page(&args.vmem_context,gop->Mode->FrameBufferBase+(i*PAGE_SIZE),&args.mmap);}
 
 const UINTN STACK_PAGES=32;  
 void*kernel_stack=mmap_allocate_pages(alloc_context,STACK_PAGES);
 memset(kernel_stack,0,STACK_PAGES*PAGE_SIZE);
 
 for (UINTN i=0;i<STACK_PAGES;++i) 
-{identity_map_page((UINTN)kernel_stack+(i*PAGE_SIZE),&args.mmap);}
+{identity_map_page(&args.vmem_context,(UINTN)kernel_stack+(i*PAGE_SIZE),&args.mmap);}
 
 tss_t tss={.io_map_base=sizeof(tss_t)};
 UINTN tss_address=(UINTN)&tss;

@@ -4,12 +4,7 @@
 #include "arch.h"
 #include "globals.h"
 
-alloc_context_t*      vmem_alloc_context;
-page_table_t*         vmem_pml4;
-KERN_RUNTIME_SERVICES*vmem_ers;
-vmem_map_context_t*vmem_map_context;
-
-void map_page(UINTN physical_address,UINTN virtual_address,MEMORY_MAP_INFO*mmap,int flags)
+void map_page(vmem_context_t*vmem_context,UINTN physical_address,UINTN virtual_address,MEMORY_MAP_INFO*mmap,int flags)
 {
 
 UINTN pml4_index=((virtual_address)>>39)&0x1FF;
@@ -17,17 +12,17 @@ UINTN pdpt_index=((virtual_address)>>30)&0x1FF;
 UINTN pdt_index =((virtual_address)>>21)&0x1FF;
 UINTN pt_index  =((virtual_address)>>12)&0x1FF;
 
-if (!(vmem_pml4->entries[pml4_index]&PAGE_PRESENT))
+if (!(vmem_context->vmem_pml4->entries[pml4_index]&PAGE_PRESENT))
 {
-void*pdpt_address=mmap_allocate_pages(vmem_alloc_context,1);
+void*pdpt_address=mmap_allocate_pages(vmem_context->vmem_alloc_context,1);
 memset(pdpt_address,0,sizeof(page_table_t));
-vmem_pml4->entries[pml4_index]=(UINTN)pdpt_address|flags;
+vmem_context->vmem_pml4->entries[pml4_index]=(UINTN)pdpt_address|flags;
 }
 
-page_table_t*pdpt=(page_table_t*)(vmem_pml4->entries[pml4_index]&PHYS_PAGE_ADDR_MASK);
+page_table_t*pdpt=(page_table_t*)(vmem_context->vmem_pml4->entries[pml4_index]&PHYS_PAGE_ADDR_MASK);
 if (!(pdpt->entries[pdpt_index]&PAGE_PRESENT))
 {
-void*pdt_address=mmap_allocate_pages(vmem_alloc_context,1);
+void*pdt_address=mmap_allocate_pages(vmem_context->vmem_alloc_context,1);
 memset(pdt_address,0,sizeof(page_table_t));
 pdpt->entries[pdpt_index]=(UINTN)pdt_address|flags;
 }
@@ -36,7 +31,7 @@ page_table_t*pdt=(page_table_t*)(pdpt->entries[pdpt_index]&PHYS_PAGE_ADDR_MASK);
 
 if (!(pdt->entries[pdt_index]&PAGE_PRESENT))
 {
-void*pt_address=mmap_allocate_pages(vmem_alloc_context,1);
+void*pt_address=mmap_allocate_pages(vmem_context->vmem_alloc_context,1);
 memset(pt_address,0,sizeof(page_table_t));
 pdt->entries[pdt_index]=(UINTN)pt_address|flags;
 }
@@ -46,22 +41,22 @@ if (!(pt->entries[pt_index]&PAGE_PRESENT))
 pt->entries[pt_index]=(physical_address&PHYS_PAGE_ADDR_MASK)|flags;
 }
 
-void identity_map_page(UINTN address,MEMORY_MAP_INFO*mmap)
+void identity_map_page(vmem_context_t*vmem_context,UINTN address,MEMORY_MAP_INFO*mmap)
 {
-map_page(address,address,mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
+map_page(vmem_context,address,address,mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
 }
 
-void identity_map_efi_mmap(MEMORY_MAP_INFO*mmap)
+void identity_map_efi_mmap(vmem_context_t*vmem_context,MEMORY_MAP_INFO*mmap)
 {
 for (UINTN i=0;i<mmap->size/mmap->desc_size;i++)
 {
 MEMORY_DESCRIPTOR_T*desc=(MEMORY_DESCRIPTOR_T*)((UINT8*)mmap->map+(i*mmap->desc_size));
 for (UINTN j=0;j<desc->NumberOfPages;j++)
-{identity_map_page(desc->PhysicalStart+(j*PAGE_SIZE),mmap);}
+{identity_map_page(vmem_context,desc->PhysicalStart+(j*PAGE_SIZE),mmap);}
 }
 }
 
-void set_runtime_address_map(MEMORY_MAP_INFO*mmap)
+void set_runtime_address_map(vmem_context_t*vmem_context,MEMORY_MAP_INFO*mmap)
 {
 UINTN runtime_descriptors=0;
 for (UINTN i=0; i < mmap->size / mmap->desc_size; i++)
@@ -72,7 +67,7 @@ runtime_descriptors++;
 }
 
 UINTN runtime_mmap_pages=(runtime_descriptors*mmap->desc_size)+((PAGE_SIZE-1)/ PAGE_SIZE);
-MEMORY_DESCRIPTOR_T*runtime_mmap =(MEMORY_DESCRIPTOR_T*)mmap_allocate_pages(vmem_alloc_context,runtime_mmap_pages);
+MEMORY_DESCRIPTOR_T*runtime_mmap =(MEMORY_DESCRIPTOR_T*)mmap_allocate_pages(vmem_context->vmem_alloc_context,runtime_mmap_pages);
 if (!runtime_mmap)
 {
 return;
@@ -95,15 +90,15 @@ curr_runtime_desc++;
 }
 }
 
-vmem_ers->SetVirtualAddressMap(runtime_mmap_size,mmap->desc_size,mmap->desc_version,runtime_mmap);
+vmem_context->vmem_ers->SetVirtualAddressMap(runtime_mmap_size,mmap->desc_size,mmap->desc_version,runtime_mmap);
 }
 
-void*vmem_map_page(void*physical,UINTN pages)
+void*vmem_map_page(vmem_context_t*vmem_context,void*physical,UINTN pages)
 {
 for (UINTN i=0;i<pages;++i)
 {
-map_page((UINTN)physical+(i*PAGE_SIZE),vmem_map_context->offset+(vmem_map_context->page*(PAGE_SIZE)),vmem_alloc_context->mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
-vmem_map_context->page++;
+map_page(vmem_context,(UINTN)physical+(i*PAGE_SIZE),vmem_context->vmem_map_context.offset+(vmem_context->vmem_map_context.page*(PAGE_SIZE)),vmem_context->vmem_alloc_context->mmap,PAGE_PRESENT|PAGE_READWRITE|PAGE_USER);
+vmem_context->vmem_map_context.page++;
 }
-return (((UINT8*)vmem_map_context->offset)+((vmem_map_context->page-pages)*PAGE_SIZE));
+return (((UINT8*)vmem_context->vmem_map_context.offset)+((vmem_context->vmem_map_context.page-pages)*PAGE_SIZE));
 }
