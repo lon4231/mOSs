@@ -101,6 +101,7 @@ UINTN       cursor_x;
 UINTN       cursor_y;
 UINTN       tty_w;
 UINTN       tty_h;
+UINT8       current_attrib;
 CHAR16*     buffer;
 UINT8*      attrib;
 UINT8*      changed;

@@ -1,16 +1,5 @@
 #pragma once
 
-#define PIC_COMMAND_MASTER 0x20
-#define PIC_COMMAND_SLAVE  0xA0
-#define PIC_DATA_MASTER    0x21
-#define PIC_DATA_SLAVE     0xA1
-#define ICW_1              0x11
-#define ICW_2_M            0x20
-#define ICW_2_S            0x28
-#define ICW_3_M            0x04
-#define ICW_3_S            0x02
-#define ICW_4              0x01
-
 enum CPUID_FEAT
 {
 CPUID_FEAT_ECX_SSE3         =1<<0,
@@ -92,11 +81,24 @@ UINT8  inb(UINT16 port){UINT8  ret;asm volatile("inb %w1, %b0":"=a"(ret):"Nd"(po
 UINT16 inw(UINT16 port){UINT16 ret;asm volatile("inw %w1, %w0":"=a"(ret):"Nd"(port):"memory");return ret;}
 UINT32 inl(UINT16 port){UINT32 ret;asm volatile("inl %w1, %0" :"=a"(ret):"Nd"(port):"memory");return ret;}
 
-void rdmsr(UINT32 msr,UINT32*lo,UINT32*hi)
-{asm volatile("rdmsr":"=a"(*lo),"=d"(*hi):"c"(msr));}
+uint64_t rdmsr(uint32_t address){
+    uint32_t low=0, high=0;
+    asm("movl %2, %%ecx;" 
+        "rdmsr;"
+        : "=a" (low), "=d" (high)
+        : "g" (address)
+    );
 
-void wrmsr(UINT32 msr,UINT32 lo,UINT32 hi)
-{asm volatile("wrmsr"::"a"(lo),"d"(hi),"c"(msr));}
+    return (uint64_t) low | ((uint64_t)high << 32);
+}
+
+void wrmsr(uint32_t address, uint64_t value)
+{
+    asm("wrmsr"
+    :
+    : "a" ((uint32_t)value), "d"(value >> 32), "c"(address)
+    );
+}
 
 void enable_sse()
 {

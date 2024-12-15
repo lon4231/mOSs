@@ -267,38 +267,108 @@ static const UINT8 font[][8]=
 
 };
 
+static const UINT32 tty_colors[16]=
+{
+0x00000000,
+0x000000FF,
+0x0000FF00,
+0x0000FFFF,
+0x00FF0000,
+0x00FF00FF,
+0x00FFFF00,
+0x00FFFFFF,
+
+0x00000000,
+0x0000007F,
+0x00007F00,
+0x00007F7F,
+0x007F0000,
+0x007F007F,
+0x007F7F00,
+0x007F7F7F,
+};
+
+
 void init_tty()
 {
 tty_context.cursor_x=0;
 tty_context.cursor_y=0;
 tty_context.tty_w=kargs->sgi.w/8;
 tty_context.tty_h=kargs->sgi.h/8;
+tty_context.current_attrib=0x07;
 
 tty_context.buffer=(CHAR16*)mmap_allocate_pages(&kargs->alloc_context,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(CHAR16)));
-
 tty_context.attrib=(UINT8* )mmap_allocate_pages(&kargs->alloc_context,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(UINT8)));
-
 tty_context.changed=(UINT8*)mmap_allocate_pages(&kargs->alloc_context,SIZE_TO_PAGES(tty_context.tty_w*tty_context.tty_h*sizeof(UINT8)));
+
+memset(tty_context.buffer,'\0',tty_context.tty_w*tty_context.tty_h*sizeof(CHAR16));
+memset(tty_context.attrib,0x0F,tty_context.tty_w*tty_context.tty_h);
+memset(tty_context.changed,true,tty_context.tty_w*tty_context.tty_h);
+
 }
+
 
 void _putchar(CHAR16 chr)
 {
+if(tty_context.cursor_x>tty_context.tty_w)
+{
+tty_context.cursor_y++;
+tty_context.cursor_x=0;
+}
+if(tty_context.cursor_y>tty_context.tty_h-1)
+{
+tty_context.cursor_y=tty_context.tty_h-1;
+memcpy(tty_context.buffer,tty_context.buffer+(tty_context.tty_w),tty_context.tty_w*(tty_context.tty_h-1)*sizeof(CHAR16));
+memcpy(tty_context.attrib, tty_context.attrib + tty_context.tty_w, tty_context.tty_w * (tty_context.tty_h - 1));
+memset(tty_context.buffer+(tty_context.tty_h-1)*tty_context.tty_w,u'\0',tty_context.tty_w*sizeof(CHAR16));
+memset(tty_context.changed,true,tty_context.tty_w*tty_context.tty_h);
+}
+
 switch (chr)
 {
 case u'\0':break;
+case u'\n':
+tty_context.cursor_x=0;
+tty_context.cursor_y++;
+break;
+case u'\r':
+tty_context.cursor_x=0;
+break;
 
 default:
+tty_context.changed[tty_context.cursor_x+(tty_context.cursor_y*tty_context.tty_w)]=true;
 tty_context.buffer[tty_context.cursor_x+(tty_context.cursor_y*tty_context.tty_w)]=chr;
+tty_context.attrib[tty_context.cursor_x+(tty_context.cursor_y*tty_context.tty_w)]=tty_context.current_attrib;
 tty_context.cursor_x++;
 break;
 }
+}
+
+void render_character(UINTN x,UINTN y,UINT16 index,UINT8 attrib)
+{
+index=index%(sizeof(font)/8);
+
+static UINT32 j=0;
+for(UINT8 i=0;i<8;++i)
+{
+for(UINT8 n=0;n<8;++n)
+{
+if(((font[index][i]>>n)&1)==1)
+{kargs->sgi.buffer[(x+n)+((y+i)*kargs->sgi.w)]=tty_colors[(attrib&0x0F)>>0];}
+else
+{kargs->sgi.buffer[(x+n)+((y+i)*kargs->sgi.w)]=tty_colors[(attrib&0xF0)>>4];}}
+}
+++j;
 }
 
 void render_tty()
 {
 for (UINTN i=0;i<tty_context.tty_w*tty_context.tty_h;++i)
 {
-kargs->sgi.buffer[i]=tty_context.buffer[i];
+if(tty_context.changed[i]==true)
+{
+render_character((i%tty_context.tty_w)*8,(i/tty_context.tty_w)*8,tty_context.buffer[i],tty_context.attrib[i]);
+tty_context.changed[i]=false;
 }
-
+}
 }

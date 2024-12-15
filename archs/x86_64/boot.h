@@ -35,7 +35,7 @@ vmem_map_context=&args.vmem_context;
 identity_map_efi_mmap(&args.mmap);
 set_runtime_address_map(&args.mmap);
 
-vmem_map_page(kernel_buffer,kernel_pages+2);
+vmem_map_page(kernel_buffer,kernel_pages*2);
 
 for(UINTN i=0;i<(gop->Mode->FrameBufferSize+(PAGE_SIZE-1))/PAGE_SIZE;i++) 
 {identity_map_page(gop->Mode->FrameBufferBase+(i*PAGE_SIZE),&args.mmap);}
@@ -51,25 +51,46 @@ tss_t tss={.io_map_base=sizeof(tss_t)};
 UINTN tss_address=(UINTN)&tss;
 
 gdt_t gdt;
-gdt.null.value          =0x0000000000000000;
-gdt.kernel_code_64.value=0x00AF9A000000FFFF;
-gdt.kernel_data_64.value=0x00CF92000000FFFF;
-gdt.user_code_64.value  =0x00AFFA000000FFFF;
-gdt.user_data_64.value  =0x00CFF2000000FFFF;
-gdt.kernel_code_32.value=0x00CF9A000000FFFF;
-gdt.kernel_data_32.value=0x00CF92000000FFFF;
-gdt.user_code_32.value  =0x00CFFA000000FFFF;
-gdt.user_data_32.value  =0x00CFF2000000FFFF;
+gdt.null={0};
+gdt.kernel_code.limit_15_0=0xFFFF;
+gdt.kernel_code.base_15_0=0;
+gdt.kernel_code.base_23_16=0;
+gdt.kernel_code.type=0xA;
+gdt.kernel_code.s=1;
+gdt.kernel_code.dpl=0;
+gdt.kernel_code.p=1;
+gdt.kernel_code.limit_19_16=0xF;
+gdt.kernel_code.avl=0;
+gdt.kernel_code.l=1;
+gdt.kernel_code.d_b=0;
+gdt.kernel_code.g=1;
+gdt.kernel_code.base_31_24 =0;
 
-gdt.tss.base_63_32=(tss_address>>32)&0xFFFFFFFF;
+gdt.kernel_data.limit_15_0=0xFFFF;
+gdt.kernel_data.base_15_0=0;
+gdt.kernel_data.base_23_16=0;
+gdt.kernel_data.type=0x2;
+gdt.kernel_data.s=1;
+gdt.kernel_data.dpl=0;
+gdt.kernel_data.p=1;
+gdt.kernel_data.limit_19_16=0xF;
+gdt.kernel_data.avl=0;
+gdt.kernel_data.l=0;
+gdt.kernel_data.d_b=1;
+gdt.kernel_data.g=1;
+gdt.kernel_data.base_31_24=0;
+
+
 gdt.tss.descriptor.limit_15_0=sizeof(tss_t)-1;
-gdt.tss.descriptor.base_15_0=tss_address&0xFFFF;
-gdt.tss.descriptor.base_23_16=(tss_address>>16)&0xFF;
+gdt.tss.descriptor.base_15_0=tss_address & 0xFFFF;
+gdt.tss.descriptor.base_23_16=(tss_address >> 16) & 0xFF;
 gdt.tss.descriptor.type=9;
 gdt.tss.descriptor.p=1;
-gdt.tss.descriptor.base_31_24=(tss_address>>24)&0xFF;
+gdt.tss.descriptor.base_31_24=(tss_address >> 24) & 0xFF;
+gdt.tss.base_63_32=(tss_address >> 32) & 0xFFFFFFFF;
 
-desc_reg_t gdtr={.limit=sizeof gdt-1,.base=(UINT64)&gdt};
+
+desc_reg_t gdtr={.limit=sizeof(gdt)-1,.base=(UINT64)&gdt};
 
 asm volatile
 (
@@ -93,7 +114,7 @@ asm volatile
 ::  
 [pml4]"r"(pml4),
 [gdt]"m"(gdtr),
-[tss]"r"((UINT16)0x48),
+[tss]"r"((UINT16)0x18),
 [stack]"gm"((UINTN)kernel_stack+(STACK_PAGES*PAGE_SIZE)),
 [entry]"r"(KERNEL_START_ADDRESS),"c"(args_ptr)
 :"rax","memory"

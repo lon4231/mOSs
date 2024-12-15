@@ -4,7 +4,7 @@
 #include "arch.h"
 #include "cpu.h"
 #include "globals.h"
-
+#include "tty.h"
 
 void init_acpi()
 {

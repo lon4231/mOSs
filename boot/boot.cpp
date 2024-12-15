@@ -63,6 +63,9 @@ u"change boot config",
 u"shutdown          ",
 };
 
+
+ebs->SetWatchdogTimer(0,0x10000,0,NULL);
+
 UINTN default_attrib=top->Mode->Attribute;
 INT32 selected=0;
 while (true)

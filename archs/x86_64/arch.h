@@ -104,14 +104,8 @@ UINT16 io_map_base;
 struct gdt_t
 {
 x86_64_desc_t  null;
-x86_64_desc_t  kernel_code_64;
-x86_64_desc_t  kernel_data_64;
-x86_64_desc_t  user_code_64;
-x86_64_desc_t  user_data_64;
-x86_64_desc_t  kernel_code_32;
-x86_64_desc_t  kernel_data_32;
-x86_64_desc_t  user_code_32;
-x86_64_desc_t  user_data_32;
+x86_64_desc_t  kernel_code;
+x86_64_desc_t  kernel_data;
 tss_ldt_desc_t tss;
 };
 
@@ -280,4 +274,11 @@ uint8_t subclass;
 uint8_t prog_if;
 uint8_t revision_id;
 uint32_t bar[6];
+};
+
+struct lapic_context_t
+{
+UINTN base_address;
+UINTN remmaped_address;
+bool x2apic;
 };
