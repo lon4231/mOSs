@@ -3,6 +3,7 @@
 #include "mstdi.h"
 #include "arch.h"
 #include "cpu.h"
+#include "alloc.h"
 #include "vmem.h"
 #include "globals.h"
 #include "printf.cpp"

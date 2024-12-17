@@ -71,10 +71,11 @@ UINT32*buffer;
 
 struct alloc_context_t
 {
-void*           next_page_address;
-UINTN           current_descriptor; 
-UINTN           remaining_pages;
 MEMORY_MAP_INFO*mmap;
+UINT8*          bitmap;
+UINTN           total_pages;
+
+UINTN current_page;
 };
 
 struct vmem_map_context_t
@@ -115,44 +116,4 @@ CHAR16*     buffer;
 UINT8*      attrib;
 UINT8*      changed;
 };
-
-UINT64 get_mmap_usable_pages(MEMORY_MAP_INFO*mmap) 
-{
-UINT64 total_pages=0;
-for(UINTN i=0;i<mmap->size/mmap->desc_size;++i)
-{
-MEMORY_DESCRIPTOR_T*desc=(MEMORY_DESCRIPTOR_T*)((UINT8*)mmap->map+(i*mmap->desc_size));
-if(desc->Type==MTConventionalMemory)
-{total_pages+=desc->NumberOfPages;}
-}
-return total_pages;
-}
-
-void*mmap_allocate_pages(alloc_context_t*alloc_context,UINTN pages)
-{
-if (alloc_context->remaining_pages<pages)
-{
-UINTN i=alloc_context->current_descriptor+1;
-for (;i<alloc_context->mmap->size/alloc_context->mmap->desc_size;++i)
-{
-MEMORY_DESCRIPTOR_T*desc=(MEMORY_DESCRIPTOR_T*)((UINT8*)alloc_context->mmap->map+(i*alloc_context->mmap->desc_size));
-
-if (desc->Type==MTConventionalMemory&&desc->NumberOfPages>=pages)
-{
-alloc_context->current_descriptor=i;
-alloc_context->remaining_pages=desc->NumberOfPages-pages;
-alloc_context->next_page_address=(void*)(desc->PhysicalStart+(pages*PAGE_SIZE));
-return (void*)desc->PhysicalStart;
-}
-}
-
-if (i>=alloc_context->mmap->size/alloc_context->mmap->desc_size)
-{return nullptr;}
-}
-
-alloc_context->remaining_pages-=pages;
-void*page=alloc_context->next_page_address;
-alloc_context->next_page_address=(void*)((UINT8*)page+(pages*PAGE_SIZE));
-return page;
-}
 

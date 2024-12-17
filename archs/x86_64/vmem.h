@@ -3,6 +3,8 @@
 #include "mstdi.h"
 #include "arch.h"
 #include "globals.h"
+#include "alloc.h"
+
 
 void map_page(vmem_context_t*vmem_context,UINTN physical_address,UINTN virtual_address,MEMORY_MAP_INFO*mmap,int flags)
 {

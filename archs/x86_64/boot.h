@@ -5,6 +5,7 @@
 #include "cpu.h"
 #include "helper.h"
 #include "vmem.h"
+#include "alloc.h"
 
 
 void arch_setup_and_jump_to_kernel(MEMORY_MAP_INFO*mmap,void*kernel_buffer,UINTN kernel_pages)
@@ -17,10 +18,10 @@ alloc_context=&args.alloc_context;
 args.sgi.buffer=(UINT32*)gop->Mode->FrameBufferBase;
 args.sgi.w=gop->Mode->Info->PixelsPerScanLine;
 args.sgi.h=gop->Mode->Info->VerticalResolution;
-args.alloc_context={nullptr,0,0,&args.mmap};
 args.krs=*((KERN_RUNTIME_SERVICES*)ers);
 
-    
+mmap_allocate_init(alloc_context,&args.mmap);
+
 pml4=(page_table_t*)mmap_allocate_pages(alloc_context,1);
 memset(pml4,0,sizeof(page_table_t));
 
