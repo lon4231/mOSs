@@ -7,6 +7,13 @@
 #include "tty.h"
 #include "apic.h"
 
+extern "C" __attribute__((noreturn,aligned(16))) void default_interrupt_handler()
+{
+asm volatile("iretq");
+}
+
+
+
 void idt_set_descriptor(UINT8 vector,void*isr,UINT8 flags) 
 {
 idt_desc_t*descriptor=&idt[vector];
@@ -18,16 +25,6 @@ descriptor->isr_mid   =((UINT64)isr>>16)&0xFFFF;
 descriptor->isr_high  =((UINT64)isr>>32)&0xFFFFFFFF;
 descriptor->reserved  =0;
 }
-
-void default_interrupt_handler()
-{
-save_context();
-
-restore_context();
-
-asm volatile("iretq");
-}
-
 
 void init_idt()
 {

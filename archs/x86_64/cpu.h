@@ -1,5 +1,33 @@
 #pragma once
 
+struct cpu_status_t
+{
+UINT64 r15;
+UINT64 r14;
+UINT64 r13;
+UINT64 r12;
+UINT64 r11;
+UINT64 r10;
+UINT64 r9;
+UINT64 r8;
+UINT64 rdi;
+UINT64 rsi;
+UINT64 rbp;
+UINT64 rdx;
+UINT64 rcx;
+UINT64 rbx;
+UINT64 rax;
+
+UINT64 interrupt_number;
+UINT64 error_code;
+
+UINT64 rip;
+UINT64 cs;
+UINT64 rflags;
+UINT64 rsp;
+UINT64 ss;
+}__attribute__((__packed__));
+
 enum CPUID_FEAT
 {
 CPUID_FEAT_ECX_SSE3         =1<<0,
@@ -81,7 +109,7 @@ UINT8  inb(UINT16 port){UINT8  ret;asm volatile("inb %w1, %b0":"=a"(ret):"Nd"(po
 UINT16 inw(UINT16 port){UINT16 ret;asm volatile("inw %w1, %w0":"=a"(ret):"Nd"(port):"memory");return ret;}
 UINT32 inl(UINT16 port){UINT32 ret;asm volatile("inl %w1, %0" :"=a"(ret):"Nd"(port):"memory");return ret;}
 
-uint64_t rdmsr(uint32_t address){
+UINT64 rdmsr(uint32_t address){
     uint32_t low=0, high=0;
     asm("movl %2, %%ecx;" 
         "rdmsr;"
@@ -89,10 +117,10 @@ uint64_t rdmsr(uint32_t address){
         : "g" (address)
     );
 
-    return (uint64_t) low | ((uint64_t)high << 32);
+    return (UINT64) low | ((UINT64)high << 32);
 }
 
-void wrmsr(uint32_t address, uint64_t value)
+void wrmsr(uint32_t address, UINT64 value)
 {
     asm("wrmsr"
     :

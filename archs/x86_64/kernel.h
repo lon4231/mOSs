@@ -12,6 +12,7 @@
 
 void karch_init_and_setup(kernel_args_t*args)
 {
+asm volatile("cli");
 kargs=args;
 xsdt=args->xdst;
 vmem_context=&args->vmem_context;
