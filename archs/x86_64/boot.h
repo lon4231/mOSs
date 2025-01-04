@@ -8,7 +8,7 @@
 #include "alloc.h"
 
 
-void arch_setup_and_jump_to_kernel(MEMORY_MAP_INFO*mmap,void*kernel_buffer,UINTN kernel_pages)
+void arch_setup_and_jump_to_kernel(MEMORY_MAP_INFO*mmap,void*kernel_buffer,UINTN kernel_pages,xsdp_t*xsdp)
 {
 
 kernel_args_t args;
@@ -19,6 +19,7 @@ args.sgi.buffer=(UINT32*)gop->Mode->FrameBufferBase;
 args.sgi.w=gop->Mode->Info->PixelsPerScanLine;
 args.sgi.h=gop->Mode->Info->VerticalResolution;
 args.krs=*((KERN_RUNTIME_SERVICES*)ers);
+args.xdst=(xsdt_t*)xsdp->XsdtAddress;
 
 mmap_allocate_init(alloc_context,&args.mmap);
 
@@ -31,11 +32,10 @@ args.vmem_context.vmem_pml4=pml4;
 args.vmem_context.vmem_map_context={KERNEL_START_ADDRESS,0};
 args.vmem_context.vmem_ers=(KERN_RUNTIME_SERVICES*)ers;
 
-
 identity_map_efi_mmap(&args.vmem_context,&args.mmap);
 set_runtime_address_map(&args.vmem_context,&args.mmap);
 
-vmem_map_page(&args.vmem_context,kernel_buffer,kernel_pages*2);
+vmem_map_page(&args.vmem_context,kernel_buffer,kernel_pages+4);
 
 
 

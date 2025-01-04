@@ -5,14 +5,12 @@ extern "C" __attribute__((noreturn,section(".kernel"))) void kmain(kernel_args_t
 {
 karch_init_and_setup(&args);
 
-printf(u"[mOSs TTY %dx%d]\r\n",tty_context.tty_w,tty_context.tty_h);
-printf(u"[WELCOME!!]\r\n");
+kprintf(u"[mOSs TTY %dx%d]\r\n",tty_context.tty_w,tty_context.tty_h);
+kprintf(u"[WELCOME!!]\r\n");
 
+UINTN i=0/0; 
 
-
-render_tty();
-
-asm volatile("sti");
+kprintf(u"asas");
 
 while(true)
 {asm volatile("hlt");}

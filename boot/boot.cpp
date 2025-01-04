@@ -16,10 +16,11 @@ load_file(u"\\EFI\\BOOT\\kernel.bin",&kernel_buffer,&kernel_size,&kernel_pages);
 
 MEMORY_MAP_INFO mmap=get_memory_map();
 
+xsdp_t*xsdp=(xsdp_t*)get_config_table_by_guid(EFI_ACPI_TABLE_GUID);
 
 ebs->ExitBootServices(img_handle,mmap.key);
 
-arch_setup_and_jump_to_kernel(&mmap,kernel_buffer,kernel_pages);
+arch_setup_and_jump_to_kernel(&mmap,kernel_buffer,kernel_pages,xsdp);
 }
 
 extern "C" EFI_STATUS emain(EFI_HANDLE img_hnd,EFI_SYSTEM_TABLE*systab)

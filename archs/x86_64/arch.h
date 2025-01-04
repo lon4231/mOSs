@@ -20,24 +20,33 @@
 #define KERN_MEMORY_ISA_VALID     0x4000000000000000
 #define KERN_MEMORY_ISA_MASK      0x0FFFF00000000000
 
+#define MADT_PROCESSOR_LOCAL_APIC               0
+#define MADT_IO_APIC                            1
+#define MADT_IO_APIC_INTERRUPT_SOURCE_OVERRIDE  2
+#define MADT_NMI_INTERRUPT_SOURCE               3
+#define MADT_LOCAL_APIC_NMI                     4
+#define MADT_LOCAL_APIC_ADDRESS_OVERRIDE        5
+#define MADT_PRORCESSOR_LOCAL_X2APIC            9
+#define MADT_INVALID_ENTRY                      255
+
 enum INTERRUPT_TYPE
 {
 INTERRUPT_GATE=0x8E,
 TRAP_GATE=0x8F,
 };
 
+enum PAGE_FLAGS
+{
+PAGE_PRESENT   =(1<<0),
+PAGE_READWRITE =(1<<1),
+PAGE_USER      =(1<<2),
+};
 
 struct page_table_t 
 {
 UINT64 entries[512];
 };
 
-enum 
-{
-PAGE_PRESENT   =(1<<0),
-PAGE_READWRITE =(1<<1),
-PAGE_USER      =(1<<2),
-};
 
 struct x86_64_desc_t
 {
@@ -168,8 +177,96 @@ struct madt_t
 acpi_header_t header;
 UINT32 laa;
 UINT32 flags;
-
 };
+
+struct madt_entry_header_t
+{
+UINT8 type;
+UINT8 length;
+};
+
+struct madt_cpu_lapic_t
+{
+madt_entry_header_t header;
+UINT8  cpu_id;
+UINT8  apic_id;
+UINT32 flags;
+};
+
+struct madt_ioapic_t
+{
+madt_entry_header_t header;
+UINT8               apic_id;
+UINT8               reserved;
+UINT32              ioapic_adress;
+UINT32              global_sys_interrupt_base;
+};
+
+struct madt_ioapic_interrupts_source_override_t
+{
+madt_entry_header_t header;
+UINT8               bus_src;
+UINT8               irq_src;
+UINT32              global_sys_interrupt;
+UINT16              flags;
+};
+
+struct madt_ioapic_nnm_interrupt_src_t
+{
+madt_entry_header_t header;
+UINT8               cpu_id;
+UINT16              flags;
+UINT8               lint;
+};
+
+struct madt_lapic_addr_override_t
+{
+madt_entry_header_t header;
+UINT16              reserved;
+UINT64              addr;
+};
+
+struct madt_cpu_lx2apic_t
+{
+madt_entry_header_t header;
+UINT16              reserved;
+UINT32              cpu_lx2apic_id;
+UINT32              flags;
+uint32_t            apci_id;
+};
+
+struct madt_entry_t
+{
+UINT8 type;
+void* entry_ptr;
+};
+
+union io_apic_redirect_entry_t 
+{
+struct
+{
+uint64_t    vector  :8;
+uint64_t    delivery_mode   :3;
+uint64_t    destination_mode    :1;
+uint64_t    delivery_status :1;
+uint64_t    pin_polarity    :1;
+uint64_t    remote_irr  :1;
+uint64_t    trigger_mode    :1;
+uint64_t    interrupt_mask  :1;
+uint64_t    reserved    :39;
+uint64_t    destination_field   :8;
+};
+uint64_t raw;
+}__attribute__((packed));
+
+struct io_apic_source_override_item_t 
+{
+uint8_t     bus_source;
+uint8_t     irq_source;
+uint32_t    global_system_interrupt;
+uint16_t    flags;
+}__attribute__((packed));
+
 
 struct gas_t
 {
@@ -248,7 +345,7 @@ UINT32 OEMRev;
 UINT32 creatorID; 
 UINT32 creatorRev;
 UINT8 reserved[12];
-} __attribute__((packed));
+}__attribute__((packed));
 
 struct mcfg_entry_t
 {
@@ -263,7 +360,7 @@ struct mcfg_t
 {
 acpi_header_t header;
 UINT64	      reserved;
-};
+}__attribute__((packed));
 
 struct pci_entry_t
 {
@@ -274,11 +371,24 @@ uint8_t subclass;
 uint8_t prog_if;
 uint8_t revision_id;
 uint32_t bar[6];
-};
+}__attribute__((packed));
 
 struct lapic_context_t
 {
 UINTN base_address;
 UINTN remmaped_address;
+UINTN timer_ticks_base;
+UINTN timer_divisor;
+UINTN pit_ticks;
 bool x2apic;
+};
+
+struct ioapic_context_t
+{
+UINTN base_address;
+UINTN remmaped_address;
+
+io_apic_source_override_item_t*source_overrides;
+
+UINTN source_overrides_count;
 };

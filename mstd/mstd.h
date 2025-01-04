@@ -51,6 +51,8 @@ typedef UINT64          EFI_VIRTUAL_ADDRESS;
 
 VOID*memcpy(VOID*dst,VOID*src,UINTN len) 
 {
+
+    
 UINT8*p=(UINT8*)dst;
 UINT8*q=(UINT8*)src;
 for (UINTN i=0;i<len;i++)

@@ -14,7 +14,7 @@ SECTIONS {
         __bss_start__ = .;
         *(.bss*);
         *(COMMON);
-        . = __bss_start__ + 0x2000;
+        . = __bss_start__ + 0x4000;
         __bss_end__ = .;
     }
 }

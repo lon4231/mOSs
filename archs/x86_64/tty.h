@@ -8,6 +8,7 @@
 #include "globals.h"
 #include "printf.cpp"
 
+
 static const UINT8 font[][8]=
 {
 {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
@@ -380,4 +381,13 @@ render_character((i%tty_context.tty_w)*8,(i/tty_context.tty_w)*8,tty_context.buf
 tty_context.changed[i]=false;
 }
 }
+}
+
+void kprintf(const CHAR16*format,...)
+{
+va_list args;
+va_start(args,format);
+vprintf(format,args);
+va_end(args);
+render_tty();
 }

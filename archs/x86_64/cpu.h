@@ -97,19 +97,59 @@ CPUID_FEAT_EDX_PBE          =1<<31
 
 #define cpuid(in,a,b,c,d) asm volatile("cpuid":"=a"(*a),"=b"(*b),"=c"(*c),"=d"(*d):"a"(in));
 
-#define save_context() asm volatile("push %%rax\n\tpush %%rbx\n\tpush %%rcx\n\tpush %%rdx\n\tpush %%rbp\n\tpush %%rsi\n\tpush %%rdi\n\tpush %%r8\n\tpush %%r9\n\tpush %%r10\n\tpush %%r11\n\tpush %%r12\n\tpush %%r13\n\tpush %%r14\n\tpush %%r15\n\t":::"memory")
+extern "C" __attribute__((always_inline)) void save_context() 
+{
+asm volatile
+(
+"push %rax;"
+"push %rbx;"
+"push %rcx;"
+"push %rdx;"
+"push %rbp;"
+"push %rsi;"
+"push %rdi;"
+"push %r8;"
+"push %r9;"
+"push %r10;"
+"push %r11;"
+"push %r12;"
+"push %r13;"
+"push %r14;"
+"push %r15;"
+);
+}
 
-#define restore_context() asm volatile("pop %%r15\n\tpop %%r14\n\tpop %%r13\n\tpop %%r12\n\tpop %%r11\n\tpop %%r10\n\tpop %%r9\n\tpop %%r8\n\tpop %%rdi\n\tpop %%rsi\n\tpop %%rbp\n\tpop %%rdx\n\tpop %%rcx\n\tpop %%rbx\n\tpop %%rax\n\t":::"memory")
+extern "C" __attribute__((always_inline)) void restore_context() 
+{
+asm volatile
+(
+"pop %r15;"
+"pop %r14;"
+"pop %r13;"
+"pop %r12;"
+"pop %r11;"
+"pop %r10;"
+"pop %r9;"
+"pop %r8;"
+"pop %rdi;"
+"pop %rsi;"
+"pop %rbp;"
+"pop %rdx;"
+"pop %rcx;"
+"pop %rbx;"
+"pop %rax;"
+);
+}
 
-void outb(UINT16 port,UINT8  val){asm volatile("outb %b0,%w1"::"a"(val),"Nd"(port):"memory");}
-void outw(UINT16 port,UINT16 val){asm volatile("outw %w0,%w1"::"a"(val),"Nd"(port):"memory");}
-void outl(UINT16 port,UINT32 val){asm volatile("outl %0,%w1" ::"a"(val),"Nd"(port):"memory");}
+void __attribute__((always_inline)) outb(UINT16 port,UINT8  val){asm volatile("outb %b0,%w1"::"a"(val),"Nd"(port):"memory");}
+void __attribute__((always_inline)) outw(UINT16 port,UINT16 val){asm volatile("outw %w0,%w1"::"a"(val),"Nd"(port):"memory");}
+void __attribute__((always_inline)) outl(UINT16 port,UINT32 val){asm volatile("outl %0,%w1" ::"a"(val),"Nd"(port):"memory");}
 
-UINT8  inb(UINT16 port){UINT8  ret;asm volatile("inb %w1, %b0":"=a"(ret):"Nd"(port):"memory");return ret;}
-UINT16 inw(UINT16 port){UINT16 ret;asm volatile("inw %w1, %w0":"=a"(ret):"Nd"(port):"memory");return ret;}
-UINT32 inl(UINT16 port){UINT32 ret;asm volatile("inl %w1, %0" :"=a"(ret):"Nd"(port):"memory");return ret;}
+UINT8  __attribute__((always_inline)) inb(UINT16 port){UINT8  ret;asm volatile("inb %w1, %b0":"=a"(ret):"Nd"(port):"memory");return ret;}
+UINT16 __attribute__((always_inline)) inw(UINT16 port){UINT16 ret;asm volatile("inw %w1, %w0":"=a"(ret):"Nd"(port):"memory");return ret;}
+UINT32 __attribute__((always_inline)) inl(UINT16 port){UINT32 ret;asm volatile("inl %w1, %0" :"=a"(ret):"Nd"(port):"memory");return ret;}
 
-UINT64 rdmsr(uint32_t address){
+UINT64 __attribute__((always_inline)) rdmsr(uint32_t address){
     uint32_t low=0, high=0;
     asm("movl %2, %%ecx;" 
         "rdmsr;"
@@ -120,7 +160,7 @@ UINT64 rdmsr(uint32_t address){
     return (UINT64) low | ((UINT64)high << 32);
 }
 
-void wrmsr(uint32_t address, UINT64 value)
+void __attribute__((always_inline)) wrmsr(uint32_t address, UINT64 value)
 {
     asm("wrmsr"
     :
