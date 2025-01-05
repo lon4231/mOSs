@@ -14,8 +14,6 @@ for(UINTN i=0;i<table_lenght;++i)
 {
 acpi_header_t*entry=(acpi_header_t*)((UINT64*)(((UINT8*)xsdt)+sizeof(acpi_header_t)))[i];
 
-kprintf(u"[ACPI ENTRY]: %c%c%c%c\r\n",entry->Signature[0],entry->Signature[1],entry->Signature[2],entry->Signature[3]);
-
 if(strcmp(entry->Signature,"APIC",4)==0)
 {madt=(madt_t*)entry;}
 

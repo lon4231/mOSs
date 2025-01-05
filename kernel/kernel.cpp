@@ -8,10 +8,10 @@ karch_init_and_setup(&args);
 kprintf(u"[mOSs TTY %dx%d]\r\n",tty_context.tty_w,tty_context.tty_h);
 kprintf(u"[WELCOME!!]\r\n");
 
-UINTN i=0/0; 
 
-kprintf(u"asas");
+
 
 while(true)
 {asm volatile("hlt");}
+
 }

@@ -6,50 +6,56 @@
 #include "globals.h"
 #include "tty.h"
 #include "apic.h"
+#include "keyboard.h"
 
 extern "C" cpu_status_t*handle_interrupt()
 {
 cpu_status_t*cpu_status;
-asm volatile("mov %%rdi,%0":"=r"(cpu_status));
+asm volatile("movq %%rdi,%0":"=r"(cpu_status));
 
 switch(cpu_status->interrupt_number)
 {
-case 0:
-
+case 32:
+write_apic_register(APIC_EOI_REGISTER_OFFSET,0x00l);
+break;
+    
+case 33:
+keyboard_handler();
+write_apic_register(APIC_EOI_REGISTER_OFFSET,0x00l);
 break;
 
-default:
-    break;
+case 34:
+apic_context.pit_ticks++;
+write_apic_register(APIC_EOI_REGISTER_OFFSET,0x00l);
+break;
+
+case 255:
+write_apic_register(APIC_EOI_REGISTER_OFFSET,0x00l);
+break;
+
+default:break;
 }
 
 return cpu_status;
 }
 
-#define NO_ERR_ISR_MACRO(x) extern "C" void __attribute__((naked,noreturn)) __isr##x()\
+#define NO_ERR_ISR_MACRO(x) void __attribute__((naked)) __isr##x()\
 {\
-asm volatile("cli");\
-asm volatile("pushq $0x0");\
-asm volatile("pushq %0" :: "i"(x));\
+asm volatile("cli;pushq $0x0;pushq %0;"::"i"(x));\
 save_context();\
 asm volatile("mov %rsp,%rdi");\
 asm volatile("cld");\
 asm volatile("call handle_interrupt");\
 restore_context();\
-asm volatile("add $16,%rsp");\
-asm volatile("iretq");\
+asm volatile("add $16,%rsp;iretq");\
 }
 
-#define ERR_ISR_MACRO(x) extern "C" void __attribute__((naked,noreturn)) __isr##x()\
+#define ERR_ISR_MACRO(x) void __attribute__((naked)) __isr##x()\
 {\
-asm volatile("cli");\
-asm volatile("pushq %0" :: "i"(x));\
+asm volatile("cli;pushq %0;"::"i"(x));\
 save_context();\
-asm volatile("mov %rsp,%rdi");\
-asm volatile("cld");\
-asm volatile("call handle_interrupt");\
 restore_context();\
-asm volatile("add $16,%rsp");\
-asm volatile("iretq");\
+asm volatile("add $16,%rsp;iretq");\
 }
 
 NO_ERR_ISR_MACRO(0 )

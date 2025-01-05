@@ -61,6 +61,7 @@ const CHAR16*boot_options[]=
 {
 u"boot moss         ",
 u"change boot config",
+u"delete kernel     ",
 u"shutdown          ",
 };
 
@@ -95,7 +96,8 @@ switch(selected)
 {
 case 0:load_kernel();break;
 case 1:boot_config(default_attrib);break;
-case 2:ers->ResetSystem(EfiResetShutdown,0,0,nullptr);break;
+case 2:delete_file(u"\\EFI\\BOOT\\kernel.bin");break;
+case 3:ers->ResetSystem(EfiResetShutdown,0,0,nullptr);break;
 default:break;
 }
 }

@@ -235,6 +235,17 @@ file->Read(file,size,*buffer);
 file->Close(file);
 }
 
+void delete_file(const CHAR16*path)
+{
+EFI_FILE_PROTOCOL*root;
+EFI_FILE_PROTOCOL*file;
+fsp->OpenVolume(fsp,&root);
+root->Open(root,&file,(CHAR16*)path,EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE,0);
+file->Delete(file);
+
+root->Close(root);
+}
+
 /*post EFI stuff*/
 
 

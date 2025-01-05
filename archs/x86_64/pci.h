@@ -44,18 +44,4 @@ pci_base=(void*)entry->base_address;
 
 }
 
-for(UINTN bus=0;bus<256;bus++)
-{
-for(UINTN device=0;device<32;device++)
-{
-for(UINTN function=0;function<8;function++)
-{
-pci_entry_t entry=get_pci_entry(bus,device,function);
-if((entry.vendor_id!=0xFFFF)&&(entry.device_id!=0xFFFF))
-{
-kprintf(u"%02x %02x %02x -- %04x %04x -- %08x %08x %08x %08x %08x %08x\r\n",bus,device,function,entry.vendor_id,entry.device_id,entry.bar[0],entry.bar[1],entry.bar[2],entry.bar[3],entry.bar[4],entry.bar[5]);
-}
-}
-}
-}
 }

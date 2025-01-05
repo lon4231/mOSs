@@ -97,49 +97,50 @@ CPUID_FEAT_EDX_PBE          =1<<31
 
 #define cpuid(in,a,b,c,d) asm volatile("cpuid":"=a"(*a),"=b"(*b),"=c"(*c),"=d"(*d):"a"(in));
 
-extern "C" __attribute__((always_inline)) void save_context() 
+__attribute__((always_inline)) void save_context() 
 {
 asm volatile
 (
-"push %rax;"
-"push %rbx;"
-"push %rcx;"
-"push %rdx;"
-"push %rbp;"
-"push %rsi;"
-"push %rdi;"
-"push %r8;"
-"push %r9;"
-"push %r10;"
-"push %r11;"
-"push %r12;"
-"push %r13;"
-"push %r14;"
-"push %r15;"
+"pushq %rax;"
+"pushq %rbx;"
+"pushq %rcx;"
+"pushq %rdx;"
+"pushq %rbp;"
+"pushq %rsi;"
+"pushq %rdi;"
+"pushq %r8;"
+"pushq %r9;"
+"pushq %r10;"
+"pushq %r11;"
+"pushq %r12;"
+"pushq %r13;"
+"pushq %r14;"
+"pushq %r15;"
 );
 }
 
-extern "C" __attribute__((always_inline)) void restore_context() 
+__attribute__((always_inline)) void restore_context() 
 {
 asm volatile
 (
-"pop %r15;"
-"pop %r14;"
-"pop %r13;"
-"pop %r12;"
-"pop %r11;"
-"pop %r10;"
-"pop %r9;"
-"pop %r8;"
-"pop %rdi;"
-"pop %rsi;"
-"pop %rbp;"
-"pop %rdx;"
-"pop %rcx;"
-"pop %rbx;"
-"pop %rax;"
+"popq %r15;"
+"popq %r14;"
+"popq %r13;"
+"popq %r12;"
+"popq %r11;"
+"popq %r10;"
+"popq %r9;"
+"popq %r8;"
+"popq %rdi;"
+"popq %rsi;"
+"popq %rbp;"
+"popq %rdx;"
+"popq %rcx;"
+"popq %rbx;"
+"popq %rax;"
 );
 }
+
 
 void __attribute__((always_inline)) outb(UINT16 port,UINT8  val){asm volatile("outb %b0,%w1"::"a"(val),"Nd"(port):"memory");}
 void __attribute__((always_inline)) outw(UINT16 port,UINT16 val){asm volatile("outw %w0,%w1"::"a"(val),"Nd"(port):"memory");}

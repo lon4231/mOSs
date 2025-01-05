@@ -198,7 +198,7 @@ struct madt_ioapic_t
 madt_entry_header_t header;
 UINT8               apic_id;
 UINT8               reserved;
-UINT32              ioapic_adress;
+UINT32              ioapic_address;
 UINT32              global_sys_interrupt_base;
 };
 
