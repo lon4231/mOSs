@@ -1,4 +1,4 @@
-ENTRY(driver);
+ENTRY(driver_setup);
 SECTIONS {    
     .text : {
         KEEP(*(.driver*));
