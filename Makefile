@@ -46,7 +46,7 @@ test:
 
 clean:
 	$(clear)
-	$(rm) BOOTX64.EFI DSKIMG.INF FILE.TXT $(wildcard *.drv) $(wildcard *.o) $(wildcard *.obj)
+	$(rm) BOOTX64.EFI DSKIMG.INF FILE.TXT kernel.krn $(wildcard *.drv) $(wildcard *.o) $(wildcard *.obj)
 
 %.o %.obj %.drv: drivers/%/main.cpp
 	$(clear)
