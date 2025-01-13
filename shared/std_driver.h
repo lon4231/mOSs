@@ -1,5 +1,6 @@
 #pragma once
 
 #include "std_types.h"
+#include "kinc.h"
 
-typedef void (*core_driver_virtual_map_page)();
+typedef void (*driver_entry_t)(kernel_handle_t*handle);
