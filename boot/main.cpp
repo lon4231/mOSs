@@ -1,5 +1,6 @@
 #include "efi.h"
 #include "efi_extra.h"
+#include "std_driver.h"
 
 #include "binc.h"
 
@@ -14,13 +15,14 @@ void boot()
 {
 kernel_handle_t handle;
 
-UINTN driver_count;
-UINTN*driver_pages;
-void**driver_buffers;
-
-UINTN kernel_pages;
-void*kernel_buffer=read_file(u"\\EFI\\BOOT\\KERNEL.KRN",&kernel_pages);
+UINTN kernel_pages=0;
+void*kernel_buffer=read_file(u"\\EFI\\BOOT\\KERNEL.KRN",&kernel_pages,4);
 kernel_pages=SIZE_TO_PAGES(kernel_pages)+4;
+
+
+UINTN driver_count=0;
+UINTN*driver_pages=nullptr;
+void**driver_buffers=nullptr;
 
 EFI_FILE_PROTOCOL*driver_dir;
 
@@ -40,8 +42,8 @@ EFI_FILE_INFO info=get_file_entry_in_dir(driver_dir,i+2);
 
 c16_strcpy(&path[8],info.FileName);
 
-driver_buffers[i]=read_file(path,&driver_pages[i]);
-driver_pages[i]=SIZE_TO_PAGES(driver_pages[i])+2;
+driver_buffers[i]=read_file(path,&driver_pages[i],2);
+driver_pages[i]=SIZE_TO_PAGES(driver_pages[i]);
 }
 }
 

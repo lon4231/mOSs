@@ -42,15 +42,14 @@ vmem_set_runtime_address_map(&handle.arch.vmem);
 
 vmem_map_pages(&handle.arch.vmem,handle.kdata.kernel_buffer,handle.kdata.kernel_size);
 
-for (UINTN i=0;i<handle.kdata.driver_count;++i)
-{
-handle.kdata.driver_buffers[i]=vmem_map_pages(&handle.arch.vmem,handle.kdata.driver_buffers[i],handle.kdata.driver_pages_count[i]);
-}
+for(UINTN i=0;i<handle.kdata.driver_count;++i)
+{handle.kdata.driver_buffers[i]=vmem_map_pages(&handle.arch.vmem,handle.kdata.driver_buffers[i],handle.kdata.driver_pages_count[i]);}
 
 
 for(UINTN i=0;i<SIZE_TO_PAGES(handle.kdata.screen_handle.w*handle.kdata.screen_handle.h*4);i++) 
 {vmem_identity_map_page(&handle.arch.vmem,((UINTN)handle.kdata.screen_handle.fb)+(i*PAGE_SIZE),&handle.arch.mmap);}
 
+memset(handle.kdata.screen_handle.fb,0,handle.kdata.screen_handle.w*handle.kdata.screen_handle.h*4);
 
 handle.kdata.kernel_stack=mmap_allocate_pages(&handle.arch.alloc,KERNEL_STACK_SIZE);
 handle.kdata.kernel_stack=vmem_map_pages(&handle.arch.vmem,handle.kdata.kernel_stack,KERNEL_STACK_SIZE);

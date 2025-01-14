@@ -68,7 +68,7 @@ filesys->OpenVolume(filesys,&root_file);
 }
 
 
-void*read_file(const CHAR16*path,UINTN*size)
+void*read_file(const CHAR16*path,UINTN*size,UINTN added_pages)
 {
 EFI_GUID info_guid=EFI_FILE_INFO_ID;
 EFI_FILE_PROTOCOL*file;
@@ -78,7 +78,7 @@ void*buffer;
 
 root_file->Open(root_file,&file,(CHAR16*)path,EFI_FILE_MODE_READ,0);
 file->GetInfo(file,&info_guid,&info_size,&info);
-boot_services->AllocatePages(AllocateAnyPages,EfiLoaderData,SIZE_TO_PAGES(info.FileSize),(EFI_PHYSICAL_ADDRESS*)&buffer);
+boot_services->AllocatePages(AllocateAnyPages,EfiLoaderData,SIZE_TO_PAGES(info.FileSize)+added_pages,(EFI_PHYSICAL_ADDRESS*)&buffer);
 file->Read(file,&info.FileSize,buffer);
 
 if(size!=nullptr)
