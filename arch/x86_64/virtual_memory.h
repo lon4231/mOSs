@@ -24,6 +24,8 @@ struct vmem_context_t
 {
     alloc_context_t *allocator_context;
     page_table_t *pml4;
+
+    void*hh_start;
 };
 
 void vmem_init_vmem(vmem_context_t *context, alloc_context_t *alloc)
@@ -31,6 +33,7 @@ void vmem_init_vmem(vmem_context_t *context, alloc_context_t *alloc)
     context->allocator_context = alloc;
     context->pml4 = (page_table_t *)mmap_allocate_pages(context->allocator_context, 1);
     memset(context->pml4, 0, sizeof(page_table_t));
+    context->hh_start=(void*)0xFFFFFFFF80000000;
 }
 
 void vmem_map_page(vmem_context_t *context, void *physical_addr, void *virtual_addr, UINT8 flags)
@@ -73,17 +76,36 @@ void vmem_map_page(vmem_context_t *context, void *physical_addr, void *virtual_a
     }
 }
 
-void arch_unmap_page(vmem_context_t *context, void *virtual_address)
+void vmem_unmap_page(vmem_context_t *context, void *virtual_address)
 {
-    uint64_t pml4_index = (((UINTN)virtual_address) >> 39) & 0x1FF;
-    uint64_t pdpt_index = (((UINTN)virtual_address) >> 30) & 0x1FF;
-    uint64_t pdt_index = (((UINTN)virtual_address) >> 21) & 0x1FF;
-    uint64_t pt_index = (((UINTN)virtual_address) >> 12) & 0x1FF;
+    UINTN pml4_index = (((UINTN)virtual_address) >> 39) & 0x1FF;
+    UINTN pdpt_index = (((UINTN)virtual_address) >> 30) & 0x1FF;
+    UINTN pdt_index = (((UINTN)virtual_address) >> 21) & 0x1FF;
+    UINTN pt_index = (((UINTN)virtual_address) >> 12) & 0x1FF;
 
     page_table_t *pdpt = (page_table_t *)(context->pml4->entries[pml4_index] & PAGE_ADDRESS_MASK);
     page_table_t *pdt = (page_table_t *)(pdpt->entries[pdpt_index] & PAGE_ADDRESS_MASK);
     page_table_t *pt = (page_table_t *)(pdt->entries[pdt_index] & PAGE_ADDRESS_MASK);
 
     pt->entries[pt_index] = 0;
-    __asm__("invlpg (%0)\n" : : "r"(virtual_address));
+    asm volatile("invlpg (%0)\n" : : "r"(virtual_address));
+}
+
+void vmem_identity_map_page(vmem_context_t*context,void*address,UINT8 flags)
+{
+vmem_map_page(context,address,address,flags);
+}
+
+void*vmem_map_hh(vmem_context_t*context,void*address,UINTN pages,UINT8 flags)
+{
+void*start=context->hh_start;
+
+for(UINTN i=0;i<pages;++i)
+{
+vmem_map_page(context,address,(void*)(((UINTN)context->hh_start+i*PAGE_SIZE)),flags);
+}
+
+context->hh_start+=pages*PAGE_SIZE;
+
+return start;
 }
