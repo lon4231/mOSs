@@ -10,11 +10,11 @@ SECTIONS {
     .rodata : {
         *(.rodata*);
     }
-.bss : {
-        __bss_start__ = .;
-        *(.bss*);
-        *(COMMON);
-        . = __bss_start__ + 0x4000;
-        __bss_end__ = .;
+    .bss (NOLOAD) : ALIGN(4)
+    {
+        __bss_start = .;
+        *(.bss)
+        . += 0x1000;  /* Manually reserving 4KB of space */
+        __bss_end = .;
     }
 }

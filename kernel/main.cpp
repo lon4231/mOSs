@@ -1,8 +1,12 @@
-#include "x86_64/kernel.h"
 
-extern "C" __attribute__((section(".kernel"))) void kmain()
+extern "C" void _putchar(char16_t chr)
+{
+
+}
+
+extern "C" void __attribute__((noreturn,section(".kernel"))) kmain()
 {
 
 
-
+asm volatile("cli;hlt");
 }
