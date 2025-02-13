@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 
 #define IN
 #define OUT
@@ -11,8 +12,8 @@
 
 typedef bool                BOOLEAN;
 
-typedef uint64_t            UINTN;
-typedef int64_t             INTN;
+typedef size_t              UINTN;
+typedef ssize_t             INTN;
 
 typedef int8_t              INT8;
 typedef uint8_t             UINT8;

@@ -1,3 +1,6 @@
+#include "std_types.h"
+#include "std_string.h"
+#include "asm.h"
 
 extern "C" void _putchar(char16_t chr)
 {
