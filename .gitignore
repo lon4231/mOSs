@@ -1,5 +1,9 @@
 /.vscode
-./moss.img
-./Makefile
-./tools/wgpt.exe
-./tools/wgpt
+
+/Makefile
+/moss.img
+
+/tools/wgpt.exe
+
+/tools/wgpt
+!/tools/wgpt/
