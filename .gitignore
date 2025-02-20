@@ -1,3 +1,5 @@
 /.vscode
-moss.iso
-Makefile
+./moss.img
+./Makefile
+./tools/wgpt.exe
+./tools/wgpt

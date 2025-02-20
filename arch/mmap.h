@@ -19,7 +19,7 @@
 #define MMAP_MEMORY_ISA_VALID          0x4000000000000000
 #define MMAP_MEMORY_ISA_MASK           0x0FFFF00000000000
 
-struct mmap_memory_desc_t
+struct mmap_mem_desc_t
 {
 UINT32 Type;
 UINT64 PhysicalStart;
@@ -31,7 +31,7 @@ UINT64 Attribute;
 struct mmap_t
 {
 UINTN                   size;
-mmap_memory_desc_t*     map;
+mmap_mem_desc_t*        map;
 UINTN                   key;
 UINTN                   desc_size;
 UINT32                  desc_ver;
