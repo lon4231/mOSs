@@ -23,7 +23,7 @@ efi_init(img_handle,systab);
 
 printf(u"SHROOM BOOT V1.1\r\n");
 printf(u"firm vendor: %s\r\n",systab->FirmwareVendor);
-printf(u"firm revision: %x\r\n",systab->FirmwareRevision);
+printf(u"firm revision: 0x%x\r\n",systab->FirmwareRevision);
 
 boot_handle_t boot_handle=setup_boot_handle();
 

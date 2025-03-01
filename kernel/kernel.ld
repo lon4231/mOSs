@@ -14,7 +14,7 @@ SECTIONS {
         __bss_start = .;
         *(.bss)
         *(COMMON)
-        . += 0x1000;  /* Manually reserving 4KB of space */
+        . += 0x4000;
         __bss_end = .;
     }
 }
