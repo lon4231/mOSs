@@ -36,6 +36,8 @@ EFI_FILE_INFO kernel_file_info=get_file_info(kernel_file);
 boot_data.kernel_bin=alloc_pages(SIZE_TO_PAGES(kernel_file_info.FileSize)+4,EfiLoaderData);
 boot_data.kernel_bin_pages=SIZE_TO_PAGES(kernel_file_info.FileSize)+4;
 
+boot_data.kernel_stack=alloc_pages(KERNEL_STACK_PAGES,EfiLoaderData);
+
 kernel_file->Read(kernel_file,&kernel_file_info.FileSize,boot_data.kernel_bin);
 
 for(UINTN i=0;i<efi->sys->NumberOfTableEntries;++i)
