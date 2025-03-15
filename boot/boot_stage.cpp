@@ -21,14 +21,11 @@ gdt.user_data_32    =0x00CFF2000000FFFF;
 UINT64 tss_base=(UINT64)&tss;
 UINT64 tss_limit=sizeof(tss) - 1;
 
-gdt.tss_segment.limit_15_0=sizeof(tss_t)-1,
+*((UINT64*)&gdt.tss_segment)=0x0000890000000067;
 gdt.tss_segment.base_15_0 =tss_base&0xFFFF, 
 gdt.tss_segment.base_23_16=(tss_base>>16)&0xFF, 
-gdt.tss_segment.type      =9,
-gdt.tss_segment.p         =1,
 gdt.tss_segment.base_31_24=(tss_base>>24)&0xFF,
 gdt.tss_segment.base_63_32=(tss_base>>32)&0xFFFFFFFF,
-gdt.tss_segment.zero=0;
 
 gdtr.base=(UINT64)&gdt;
 gdtr.limit=sizeof(gdt_t)-1;

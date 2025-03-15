@@ -64,6 +64,12 @@ if(desc->Type==EfiConventionalMemory)
 
 printf(u"usable memory: %d MiB\r\n",(usable_memory*PAGE_SIZE)/0x100000);
 
+
+
+
+
+
+
 efi->bs->ExitBootServices(efi->img_handle,boot_data.mmap.key);
 
 boot_to_kernel(&boot_data);
