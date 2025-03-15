@@ -2,7 +2,7 @@
 
 struct page_table_entry_t
 {
-union virtual_memory
+union
 {
 UINT64 value;
 struct

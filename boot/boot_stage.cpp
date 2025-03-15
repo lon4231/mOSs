@@ -60,4 +60,5 @@ asm volatile(
 : "rax", "memory"
 );
 
+asm volatile("cli;hlt");
 }
