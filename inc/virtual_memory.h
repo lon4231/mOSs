@@ -37,4 +37,6 @@ virtual_memory_page_request request_page;
 page_table_t*pml4;
 };
 
+void init_vmm(vmem_handle_t*vmm,void*pml4_page);
+
 void vmem_map_page(vmem_handle_t*vmem,void*phys_addr,void*virt_addr,UINT32 flags);
