@@ -10,20 +10,19 @@
 
 struct kernel_args_t
 {
-void* kernel_bin;
-UINTN kernel_bin_pages;
+    void *kernel_bin;
+    UINTN kernel_bin_pages;
 
-void* kernel_stack;
+    void *kernel_stack;
 
-mmap_t mmap;
+    mmap_t mmap;
 
-xsdp_t*xsdp;
+    xsdp_t *xsdp;
 
-gdt_t gdt;
-tss_t tss;
-gdtr_t gdtr;
+    gdt_t gdt;
+    tss_t tss;
+    gdtr_t gdtr;
 
-idt_t idt;
-idtr_t idtr;
-
+    idt_t idt;
+    idtr_t idtr;
 };
