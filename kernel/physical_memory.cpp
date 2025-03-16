@@ -17,7 +17,7 @@ current_index++;
 return NULL;
 }
 
-void init_phys_mem(phys_mem_handle_t*phys_mem,mmap_t*mmap)
+void init_pmm(pmm_handle_t*phys_mem,mmap_t*mmap)
 {
 phys_mem->mmap=mmap;
 phys_mem->usable_pages=0;
@@ -32,7 +32,7 @@ if(desc->Type==7)
 
 }
 
-void*phys_mem_reserve_page(phys_mem_handle_t*phys_mem)
+void*pmm_reserve_page(pmm_handle_t*phys_mem)
 {
 if(phys_mem->reserved_pages>=phys_mem->usable_pages)
 {return nullptr;}

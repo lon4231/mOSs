@@ -1,27 +1,15 @@
 #include "std_types.h"
 
+enum PAGE_TABLE_FLAGS
+{
+PAGE_TABLE_FLAGS_PRESENT=1,
+PAGE_TABLE_FLAGS_RW     =2,
+PAGE_TABLE_FLAGS_USER   =4,
+};
+
 struct page_table_entry_t
 {
-union
-{
 UINT64 value;
-struct
-{
-UINT64 present    :1;
-UINT64 rw         :1;
-UINT64 user       :1;
-UINT64 pwt        :1;
-UINT64 pcd        :1;
-UINT64 accessed   :1;
-UINT64 dirty      :1;
-UINT64 pat        :1;
-UINT64 global     :1;
-UINT64 available  :3;
-UINT64 frame      :40;
-UINT64 reserved   :11;
-UINT64 nx         :1;
-};
-};
 }__attribute__((packed));
 
 struct page_table_t
@@ -29,16 +17,18 @@ struct page_table_t
 page_table_entry_t entries[512];
 }__attribute__((packed));
 
-typedef void*(*virtual_memory_page_request)();
+typedef void*(*vmm_page_request)();
+typedef void (*vmm_page_free_request)(void*phys_addr);
 
-struct vmem_handle_t
+struct vmm_handle_t
 {
-virtual_memory_page_request request_page;
+vmm_page_request request_page;
+vmm_page_free_request free_page;
 page_table_t*pml4;
 };
 
-void init_vmm(vmem_handle_t*vmm,void*pml4_page);
+void init_vmm(vmm_handle_t*vmm,void*pml4_page);
 
-void vmem_map_page(vmem_handle_t*vmem,void*phys_addr,void*virt_addr,UINT32 flags);
+void vmm_map_page(vmm_handle_t*vmem,void*phys_addr,void*virt_addr,UINT32 flags);
 
-void vmem_map_pages(vmem_handle_t*vmem,void*phys_addr,void*virt_addr,UINT32 flags,UINTN pages);
+void vmm_map_pages(vmm_handle_t*vmem,void*phys_addr,void*virt_addr,UINT32 flags,UINTN pages);

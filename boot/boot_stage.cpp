@@ -1,7 +1,7 @@
 #include "boot.h"
 #include "std_string.h"
 
-void boot_to_kernel(boot_data_t*boot_data)
+void boot_to_kernel(kernel_args_t*boot_data)
 {
 gdt_t gdt;
 tss_t tss;

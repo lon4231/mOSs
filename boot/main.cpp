@@ -3,7 +3,7 @@
 #include "boot.h"
 
 efi_t*efi=nullptr;
-boot_data_t boot_data;
+kernel_args_t boot_data;
 
 void efi_init(EFI_HANDLE img_handle,EFI_SYSTEM_TABLE*systab)
 {
