@@ -11,10 +11,6 @@ SECTIONS {
         *(.rodata*);
     }
     .bss : {
-        __bss_start = .;
-        *(.bss)
-        *(COMMON)
-        . += 0x4000;
-        __bss_end = .;
+        *(.bss*);
     }
 }

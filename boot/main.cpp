@@ -36,8 +36,8 @@ memset(boot_data,0,sizeof(kernel_args_t));
 EFI_FILE_PROTOCOL*kernel_file=open_file(u"\\EFI\\BOOT\\KERNEL.BIN",EFI_FILE_MODE_READ,0);
 EFI_FILE_INFO kernel_file_info=get_file_info(kernel_file);
 
-boot_data->kernel_bin=alloc_pages(SIZE_TO_PAGES(kernel_file_info.FileSize)+4,EfiLoaderData);
-boot_data->kernel_bin_pages=SIZE_TO_PAGES(kernel_file_info.FileSize)+4;
+boot_data->kernel_bin=alloc_pages(SIZE_TO_PAGES(kernel_file_info.FileSize)+KERNEL_BSS_SIZE,EfiLoaderData);
+boot_data->kernel_bin_pages=SIZE_TO_PAGES(kernel_file_info.FileSize)+KERNEL_BSS_SIZE;
 
 boot_data->kernel_stack=alloc_pages(KERNEL_STACK_PAGES,EfiLoaderData);
 

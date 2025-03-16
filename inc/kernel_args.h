@@ -6,6 +6,7 @@
 #include "idt.h"
 
 #define KERNEL_STACK_PAGES 16
+#define KERNEL_BSS_SIZE 16
 
 struct kernel_args_t
 {
