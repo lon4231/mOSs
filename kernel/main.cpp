@@ -9,17 +9,25 @@
 static phys_mem_handle_t pmm;
 static vmem_handle_t     vmm;
 
-extern "C" void _putchar(char16_t chr)
+void*vmm_bootstrap_page_request()
 {
-
-
-
+return phys_mem_reserve_page(&pmm);
 }
+
 
 extern "C" void __attribute__((noreturn,section(".kernel"))) kmain(kernel_args_t*kargs)
 {
 init_phys_mem(&pmm,&kargs->mmap);
+
 init_vmm(&vmm,phys_mem_reserve_page(&pmm));
+
+vmm.request_page=vmm_bootstrap_page_request;
+
+
+
+
+asm volatile("movq %0, %%CR3;"::"r"(vmm.pml4));
+
 
 
 

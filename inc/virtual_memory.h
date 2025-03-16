@@ -29,7 +29,7 @@ struct page_table_t
 page_table_entry_t entries[512];
 }__attribute__((packed));
 
-typedef void(*virtual_memory_page_request)();
+typedef void*(*virtual_memory_page_request)();
 
 struct vmem_handle_t
 {
@@ -40,3 +40,5 @@ page_table_t*pml4;
 void init_vmm(vmem_handle_t*vmm,void*pml4_page);
 
 void vmem_map_page(vmem_handle_t*vmem,void*phys_addr,void*virt_addr,UINT32 flags);
+
+void vmem_map_pages(vmem_handle_t*vmem,void*phys_addr,void*virt_addr,UINT32 flags,UINTN pages);

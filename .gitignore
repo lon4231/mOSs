@@ -4,6 +4,7 @@
 /moss.img
 
 /tools/wgpt.exe
+/tools/wgpt.elf
 
 /tools/wgpt
 !/tools/wgpt/
