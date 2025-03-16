@@ -24,18 +24,11 @@ init_vmm(&vmm,pmm_reserve_page(&pmm));
 
 vmm.request_page=vmm_bootstrap_page_request;
 
-for(UINTN i=0;i<(kargs->mmap.size/kargs->mmap.desc_size);++i)
-{
-mmap_mem_desc_t*desc=(mmap_mem_desc_t*)((UINT8*)kargs->mmap.map+(i*kargs->mmap.desc_size));
-
-vmm_map_pages(&vmm,(void*)desc->PhysicalStart,(void*)desc->VirtualStart,0b111,desc->NumberOfPages);
-}
+vmm_map_pages(&vmm,(void*)kargs->kernel_bin,(void*)kargs->kernel_bin,0b111,kargs->kernel_bin_pages);
+vmm_map_pages(&vmm,(void*)kargs->kernel_stack,(void*)kargs->kernel_stack,0b111,kargs->kernel_bin_pages);
+vmm_map_pages(&vmm,(void*)kargs,(void*)kargs,0b111,SIZE_TO_PAGES(sizeof(kernel_args_t)));
 
 asm volatile("movq %0, %%CR3;"::"r"(vmm.pml4));
-
-
-
-
 
 
 asm volatile("cli;hlt");

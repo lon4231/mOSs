@@ -39,26 +39,24 @@ if(vmem->request_page!=nullptr)
 {
 pdt_page=vmem->request_page();
 memset(pdt_page,0,sizeof(page_table_t));
-vmem->pml4->entries[pdpt_index].value=(UINT64)pdt_page | flags;
+pdpt->entries[pdpt_index].value=(UINT64)pdt_page|flags;
 }
 }
 
 page_table_t*pdt=(page_table_t*)(pdpt->entries[pdpt_index].value&PHYS_ADDR_MASK);
 if(!(pdt->entries[pdt_index].value&PAGE_TABLE_FLAGS_PRESENT))
 {
-void*pdt_page=nullptr;
+void*pt_page=nullptr;
 if(vmem->request_page!=nullptr)
 {
-pdt_page=vmem->request_page();
-memset(pdt_page,0,sizeof(page_table_t));
-vmem->pml4->entries[pdt_index].value=(UINT64)pdt_page | flags;
+pt_page=vmem->request_page();
+memset(pt_page,0,sizeof(page_table_t));
+pdt->entries[pdt_index].value=(UINT64)pt_page|flags;
 }
 }
 
 page_table_t*pt=(page_table_t*)(pdt->entries[pdt_index].value&PHYS_ADDR_MASK);
-{
-pt->entries[pt_index].value=(((UINT64)phys_addr)&PHYS_ADDR_MASK)|flags;
-}
+pt->entries[pt_index].value=((UINT64)phys_addr&PHYS_ADDR_MASK)|flags;
 
 }
 
