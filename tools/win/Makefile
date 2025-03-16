@@ -9,15 +9,13 @@ cls:=cls
 rm :=del
 
 wgpt		        :=tools/wgpt.exe
-
-
 wgpt_src            :=tools/wgpt/wgpt.c
 wgpt_cflags         :=-O3 -s
 
 qemu		        :=qemu-system-x86_64
 qemu_flags          :=-bios tools/bios64.bin -m 4G -vga std -display sdl -name MOSS -machine q35 -usb -device usb-mouse -rtc base=localtime -net none
 
-boot_src	        :=$(wildcard boot/*.cpp) printf/printf.cpp $(wildcard std/*.cpp) $(wildcard arch/*.cpp)
+boot_src	        :=$(wildcard boot/*.cpp) printf/printf.cpp $(wildcard std/*.cpp)
 boot_inc            :=-Iinc -Iprintf -Iboot
 boot_cflags         :=-w -O3 -s -mno-red-zone -ffreestanding -fno-stack-protector -fno-exceptions -fno-rtti -std=c++20
 boot_ldflags        :=-nostdlib -Wl,--subsystem,10 -e emain
@@ -25,7 +23,7 @@ boot_ldflags        :=-nostdlib -Wl,--subsystem,10 -e emain
 boot_targets  	    :=$(patsubst %.cpp,%.boot,$(boot_src))
 boot_real_targets   :=$(notdir $(patsubst %.cpp,%.o,$(boot_src)))
 
-kernel_src     	    :=$(wildcard kernel/*.cpp) $(wildcard arch/*.cpp)
+kernel_src     	    :=$(wildcard kernel/*.cpp) printf/printf.cpp $(wildcard std/*.cpp)
 kernel_inc	   	    :=-Iinc -Iprintf
 kernel_cflags  	    :=-w -O3 -s -mno-red-zone -ffreestanding -nostdlib -fno-stack-protector -fno-exceptions -fno-rtti -fPIE -std=c++20
 kernel_ldflags 	    :=-e kmain -nostdlib -pie

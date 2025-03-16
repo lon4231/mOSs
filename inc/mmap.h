@@ -19,6 +19,7 @@
 #define MMAP_MEMORY_ISA_VALID          0x4000000000000000
 #define MMAP_MEMORY_ISA_MASK           0x0FFFF00000000000
 
+
 struct mmap_mem_desc_t
 {
 UINT32 Type;

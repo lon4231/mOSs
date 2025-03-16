@@ -34,6 +34,11 @@ internal_efi.bs->AllocatePages(AllocateAnyPages,mt,pages,(EFI_PHYSICAL_ADDRESS*)
 return allocated;
 }
 
+void free_pages(void*address,UINTN pages)
+{
+internal_efi.bs->FreePages((EFI_PHYSICAL_ADDRESS)address,pages);
+}
+
 EFI_FILE_PROTOCOL*get_root_file()
 {
 EFI_FILE_PROTOCOL*root;
@@ -69,8 +74,8 @@ internal_efi.bs->GetMemoryMap(&mmap->size,
 &mmap->key,
 &mmap->desc_size,
 &mmap->desc_ver);
-mmap->size += mmap->desc_size * 2;  
-internal_efi.bs->AllocatePool(EfiLoaderData, mmap->size,(VOID **)&mmap->map);
+mmap->size+=mmap->desc_size*2;
+mmap->map=(mmap_mem_desc_t*)alloc_pages(SIZE_TO_PAGES(mmap->size),EfiLoaderData);
 internal_efi.bs->GetMemoryMap(&mmap->size,
 (EFI_MEMORY_DESCRIPTOR*)mmap->map,
 &mmap->key,
