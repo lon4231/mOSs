@@ -1,3 +1,4 @@
+#pragma once
 #include "std_types.h"
 #include "mmap.h"
 

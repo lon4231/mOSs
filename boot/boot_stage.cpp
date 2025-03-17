@@ -1,6 +1,12 @@
 #include "boot.h"
 #include "std_string.h"
 
+pmm_handle_t*bootstram_pmm_ptr;
+
+void*vmm_bootstrap_page_request()
+{return pmm_reserve_page(bootstram_pmm_ptr);}
+
+
 void boot_to_kernel(kernel_args_t *boot_data)
 {
     boot_data->gdt.null = 0x0000000000000000;
@@ -30,17 +36,39 @@ void boot_to_kernel(kernel_args_t *boot_data)
     boot_data->idtr.base = (UINT64)&boot_data->idt;
     boot_data->idtr.limit = sizeof(idt_t) - 1;
 
+    init_pmm(&boot_data->pmm, &boot_data->mmap);
+    init_vmm(&boot_data->vmm, pmm_reserve_page(&boot_data->pmm));
+
+    bootstram_pmm_ptr=&boot_data->pmm;
+
+    boot_data->vmm.request_page=vmm_bootstrap_page_request;
+
+    for(UINTN i=0;i<(boot_data->mmap.size/boot_data->mmap.desc_size);++i)
+    {
+        mmap_mem_desc_t*desc=(mmap_mem_desc_t*)(((UINT8*)boot_data->mmap.map)+(i*boot_data->mmap.desc_size));
+
+        if((desc->Type==1))
+        {vmm_map_pages(&boot_data->vmm,(void*)desc->PhysicalStart,(void*)desc->PhysicalStart,0b111,desc->NumberOfPages);}
+    }
+
+    boot_data->kernel_bin=vmm_map_higher_half(&boot_data->vmm, (void *)boot_data->kernel_bin,0b111,boot_data->kernel_bin_pages);
+    boot_data->kernel_stack=vmm_map_higher_half(&boot_data->vmm, (void *)boot_data->kernel_stack, 0b111, KERNEL_STACK_PAGES);
+    boot_data=(kernel_args_t*)vmm_map_higher_half(&boot_data->vmm, (void *)boot_data, 0b111, SIZE_TO_PAGES(sizeof(kernel_args_t)));
+
+
+    vmm_map_page(&boot_data->vmm,boot_data->vmm.pml4,boot_data->vmm.pml4,0b111);
+
     asm volatile(
         "cli;"
         "lgdt %[gdt];"
         "ltr %[tss];"
         "lidt %[idtr];"
-
+        
         "pushq $0x8;"
         "leaq 1f(%%RIP), %%RAX;"
         "pushq %%RAX;"
         "lretq;"
-
+        
         "1:;"
         "movq $0x10, %%RAX;"
         "movq %%RAX, %%DS;"
@@ -48,12 +76,15 @@ void boot_to_kernel(kernel_args_t *boot_data)
         "movq %%RAX, %%FS;"
         "movq %%RAX, %%GS;"
         "movq %%RAX, %%SS;"
-
+        
+        "movq %[page_table],%%CR3;"
+        
         "movq %[kstack], %%RSP;"
         "callq %[kernel_bin];" ::
-            [gdt] "m"(boot_data->gdtr),
+        [gdt] "m"(boot_data->gdtr),
         [tss] "r"(0x48),
         [idtr] "m"(boot_data->idtr),
+        [page_table]"r"(boot_data->vmm.pml4),
         [kstack] "gm"(boot_data->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE)),
         [kernel_bin] "r"(boot_data->kernel_bin), "c"(boot_data)
         : "rax", "memory");

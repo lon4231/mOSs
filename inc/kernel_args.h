@@ -4,6 +4,8 @@
 #include "acpi.h"
 #include "gdt.h"
 #include "idt.h"
+#include "physical_memory.h"
+#include "virtual_memory.h"
 
 #define KERNEL_STACK_PAGES 16
 #define KERNEL_BSS_SIZE 16
@@ -25,4 +27,7 @@ struct kernel_args_t
 
     idt_t idt;
     idtr_t idtr;
+
+    pmm_handle_t pmm;
+    vmm_handle_t vmm;
 };
