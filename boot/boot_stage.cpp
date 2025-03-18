@@ -4,11 +4,13 @@
 pmm_handle_t*bootstram_pmm_ptr;
 
 void*vmm_bootstrap_page_request()
-{return pmm_reserve_page(bootstram_pmm_ptr);}
+{return pmm_request_page(bootstram_pmm_ptr);}
 
 
 void boot_to_kernel(kernel_args_t *boot_data)
 {
+	//memset(0,255,0xFFFFFFFF);
+
     boot_data->gdt.null = 0x0000000000000000;
     boot_data->gdt.kernel_code_64 = 0x00AF9A000000FFFF;
     boot_data->gdt.kernel_data_64 = 0x00CF92000000FFFF;
@@ -37,7 +39,7 @@ void boot_to_kernel(kernel_args_t *boot_data)
     boot_data->idtr.limit = sizeof(idt_t) - 1;
 
     init_pmm(&boot_data->pmm, &boot_data->mmap);
-    init_vmm(&boot_data->vmm, pmm_reserve_page(&boot_data->pmm));
+    init_vmm(&boot_data->vmm, pmm_request_page(&boot_data->pmm));
 
     bootstram_pmm_ptr=&boot_data->pmm;
 
@@ -55,8 +57,8 @@ void boot_to_kernel(kernel_args_t *boot_data)
     boot_data->kernel_stack=vmm_map_higher_half(&boot_data->vmm, (void *)boot_data->kernel_stack, 0b111, KERNEL_STACK_PAGES);
     boot_data=(kernel_args_t*)vmm_map_higher_half(&boot_data->vmm, (void *)boot_data, 0b111, SIZE_TO_PAGES(sizeof(kernel_args_t)));
 
-
-    vmm_map_page(&boot_data->vmm,boot_data->vmm.pml4,boot_data->vmm.pml4,0b111);
+	memset(0,255,0xFFFFFFFF);
+    //vmm_map_page(&boot_data->vmm,boot_data->vmm.pml4,boot_data->vmm.pml4,0b111);
 
     asm volatile(
         "cli;"

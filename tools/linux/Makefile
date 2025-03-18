@@ -8,9 +8,7 @@ ld :=x86_64-w64-mingw32-ld
 cls:=clear
 rm :=rm -rf
 
-wgpt		        :=tools/wgpt.elf
-
-
+wgpt		    :=tools/wgpt.elf
 wgpt_src            :=tools/wgpt/wgpt.c
 wgpt_cflags         :=-O3 -s
 
@@ -25,7 +23,7 @@ boot_ldflags        :=-nostdlib -Wl,--subsystem,10 -e emain
 boot_targets  	    :=$(patsubst %.cpp,%.boot,$(boot_src))
 boot_real_targets   :=$(notdir $(patsubst %.cpp,%.o,$(boot_src)))
 
-kernel_src     	    :=$(wildcard kernel/*.cpp) $(wildcard arch/*.cpp)
+kernel_src     	    :=$(wildcard kernel/*.cpp) printf/printf.cpp $(wildcard std/*.cpp) $(wildcard arch/*.cpp)
 kernel_inc	   	    :=-Iinc -Iprintf
 kernel_cflags  	    :=-w -O3 -s -mno-red-zone -ffreestanding -nostdlib -fno-stack-protector -fno-exceptions -fno-rtti -fPIE -std=c++20
 kernel_ldflags 	    :=-e kmain -nostdlib -pie
