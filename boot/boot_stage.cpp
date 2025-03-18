@@ -9,8 +9,6 @@ void*vmm_bootstrap_page_request()
 
 void boot_to_kernel(kernel_args_t *boot_data)
 {
-	//memset(0,255,0xFFFFFFFF);
-
     boot_data->gdt.null = 0x0000000000000000;
     boot_data->gdt.kernel_code_64 = 0x00AF9A000000FFFF;
     boot_data->gdt.kernel_data_64 = 0x00CF92000000FFFF;
@@ -48,17 +46,14 @@ void boot_to_kernel(kernel_args_t *boot_data)
     for(UINTN i=0;i<(boot_data->mmap.size/boot_data->mmap.desc_size);++i)
     {
         mmap_mem_desc_t*desc=(mmap_mem_desc_t*)(((UINT8*)boot_data->mmap.map)+(i*boot_data->mmap.desc_size));
-
-        if((desc->Type==1))
+        if(desc->Type==1)
         {vmm_map_pages(&boot_data->vmm,(void*)desc->PhysicalStart,(void*)desc->PhysicalStart,0b111,desc->NumberOfPages);}
     }
 
-    boot_data->kernel_bin=vmm_map_higher_half(&boot_data->vmm, (void *)boot_data->kernel_bin,0b111,boot_data->kernel_bin_pages);
-    boot_data->kernel_stack=vmm_map_higher_half(&boot_data->vmm, (void *)boot_data->kernel_stack, 0b111, KERNEL_STACK_PAGES);
-    boot_data=(kernel_args_t*)vmm_map_higher_half(&boot_data->vmm, (void *)boot_data, 0b111, SIZE_TO_PAGES(sizeof(kernel_args_t)));
+    boot_data->kernel_bin=vmm_map_higher_half(&boot_data->vmm,boot_data->kernel_bin,0b111,boot_data->kernel_bin_pages);
+    boot_data->kernel_stack=vmm_map_higher_half(&boot_data->vmm,boot_data->kernel_stack,0b111,KERNEL_STACK_PAGES);
+    boot_data=(kernel_args_t*)vmm_map_higher_half(&boot_data->vmm,boot_data,0b111,SIZE_TO_PAGES(sizeof(kernel_args_t)));
 
-	memset(0,255,0xFFFFFFFF);
-    //vmm_map_page(&boot_data->vmm,boot_data->vmm.pml4,boot_data->vmm.pml4,0b111);
 
     asm volatile(
         "cli;"
@@ -79,8 +74,8 @@ void boot_to_kernel(kernel_args_t *boot_data)
         "movq %%RAX, %%GS;"
         "movq %%RAX, %%SS;"
         
-        "movq %[page_table],%%CR3;"
         
+        "movq %[page_table],%%CR3;"
         "movq %[kstack], %%RSP;"
         "callq %[kernel_bin];" ::
         [gdt] "m"(boot_data->gdtr),

@@ -7,7 +7,7 @@ void init_vmm(vmm_handle_t *vmm, void *pml4_page)
 {
     vmm->pml4 = (page_table_t *)pml4_page;
     memset(vmm->pml4, 0, sizeof(page_table_t));
-    vmm->higher_half_index=0;
+    vmm->higher_half_index = 0;
 }
 
 void vmm_map_page(vmm_handle_t *vmem, void *phys_addr, void *virt_addr, UINT32 flags)
@@ -68,8 +68,8 @@ void vmm_map_pages(vmm_handle_t *vmm, void *phys_addr, void *virt_addr, UINT32 f
 
 void *vmm_map_higher_half(vmm_handle_t *vmm, void *phys_addr, UINT32 flags, UINTN pages)
 {
-void*virt_addr=(void*)(HIGHER_HALF_START_ADDRESS+(vmm->higher_half_index*PAGE_SIZE));
-vmm_map_pages(vmm,phys_addr,virt_addr,flags,pages);
-vmm->higher_half_index+=pages;
-return virt_addr;
+    void *virt_addr = (void *)(HIGHER_HALF_START_ADDRESS + (vmm->higher_half_index * PAGE_SIZE));
+    vmm_map_pages(vmm, phys_addr, virt_addr, flags, pages);
+    vmm->higher_half_index += pages;
+    return virt_addr;
 }

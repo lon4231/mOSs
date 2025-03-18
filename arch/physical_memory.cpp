@@ -19,33 +19,41 @@ void *get_indexed_usable_page(mmap_t *mmap, UINTN index)
             current_index++;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
-
-
-
-
-
-
-void init_pmm(pmm_handle_t *phys_mem, mmap_t *mmap)
+void freelist_add_page(pmm_handle_t *pmm, freelist_node_t *new_node)
 {
-    phys_mem->mmap = mmap;
-    phys_mem->total_pages=0;
-    phys_mem->head=nullptr;
+    new_node->next = pmm->head;
+    pmm->head = new_node;
+}
 
-    for(UINTN i=0;i<(mmap->size/mmap->desc_size);++i)
+void init_pmm(pmm_handle_t *pmm, mmap_t *mmap)
+{
+    pmm->mmap = mmap;
+    pmm->total_pages = 0;
+    pmm->head = nullptr;
+
+    for (UINTN i = 0; i < (mmap->size / mmap->desc_size); ++i)
     {
-     mmap_mem_desc_t*desc=(mmap_mem_desc_t*)(((UINT8*)mmap->map)+(i*mmap->desc_size));
-     if(desc->Type==7)
-     {
-	phys_mem->total_pages+=desc->NumberOfPages;
-     }
-    }
+        mmap_mem_desc_t *desc = (mmap_mem_desc_t *)(((UINT8 *)mmap->map) + (i * mmap->desc_size));
+        if (desc->Type == 7)
+        {
+            pmm->total_pages += desc->NumberOfPages;
 
+            for (UINTN n = 0; n < desc->NumberOfPages; ++n)
+            {
+                freelist_add_page(pmm, (freelist_node_t *)(desc->PhysicalStart + (n * PAGE_SIZE)));
+            }
+        }
+    }
 }
 
-void *pmm_request_page(pmm_handle_t *phys_mem)
+void *pmm_request_page(pmm_handle_t *pmm)
 {
-return nullptr;
+    void *page = (void *)pmm->head;
+
+    pmm->head = pmm->head->next;
+
+    return page;
 }

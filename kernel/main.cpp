@@ -15,8 +15,6 @@ extern "C" void __attribute__((noreturn, section(".kernel"))) kmain(kernel_args_
     kargs=kargs_ptr;
 
 
-	memset(0,255,0xFFFFFFFF);
-
 
     asm volatile("cli;hlt");
 }
