@@ -57,3 +57,14 @@ void *pmm_request_page(pmm_handle_t *pmm)
 
     return page;
 }
+
+void pmm_free_page(pmm_handle_t*pmm,void*page)
+{
+freelist_node_t*new_node=(freelist_node_t*)page;
+
+new_node->next=pmm->head;
+
+pmm->head=new_node;
+
+
+}

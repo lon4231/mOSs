@@ -1,11 +1,6 @@
 #include "boot.h"
 #include "std_string.h"
 
-pmm_handle_t*bootstram_pmm_ptr;
-
-void*vmm_bootstrap_page_request()
-{return pmm_request_page(bootstram_pmm_ptr);}
-
 
 void boot_to_kernel(kernel_args_t *boot_data)
 {
@@ -37,11 +32,8 @@ void boot_to_kernel(kernel_args_t *boot_data)
     boot_data->idtr.limit = sizeof(idt_t) - 1;
 
     init_pmm(&boot_data->pmm, &boot_data->mmap);
-    init_vmm(&boot_data->vmm, pmm_request_page(&boot_data->pmm));
+    init_vmm(&boot_data->vmm, &boot_data->pmm);
 
-    bootstram_pmm_ptr=&boot_data->pmm;
-
-    boot_data->vmm.request_page=vmm_bootstrap_page_request;
 
     for(UINTN i=0;i<(boot_data->mmap.size/boot_data->mmap.desc_size);++i)
     {

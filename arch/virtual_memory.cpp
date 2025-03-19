@@ -3,14 +3,14 @@
 
 #define PHYS_ADDR_MASK 0x000FFFFFFFFFF000
 
-void init_vmm(vmm_handle_t *vmm, void *pml4_page)
+void init_vmm(vmm_handle_t *vmm,pmm_handle_t*pmm)
 {
-    vmm->pml4 = (page_table_t *)pml4_page;
+    vmm->pml4 = (page_table_t *)pmm_request_page(pmm);
     memset(vmm->pml4, 0, sizeof(page_table_t));
     vmm->higher_half_index = 0;
 }
 
-void vmm_map_page(vmm_handle_t *vmem, void *phys_addr, void *virt_addr, UINT32 flags)
+void vmm_map_page(vmm_handle_t *vmm, void *phys_addr, void *virt_addr, UINT32 flags)
 {
 
     UINT64 pml4_index = (((UINT64)virt_addr) >> 39) & 0x1FF;
@@ -18,40 +18,30 @@ void vmm_map_page(vmm_handle_t *vmem, void *phys_addr, void *virt_addr, UINT32 f
     UINT64 pdt_index = (((UINT64)virt_addr) >> 21) & 0x1FF;
     UINT64 pt_index = (((UINT64)virt_addr) >> 12) & 0x1FF;
 
-    if (!(vmem->pml4->entries[pml4_index].value & PAGE_TABLE_FLAGS_PRESENT))
+    if (!(vmm->pml4->entries[pml4_index].value & PAGE_TABLE_FLAGS_PRESENT))
     {
         void *pdpt_page = nullptr;
-
-        if (vmem->request_page != nullptr)
-        {
-            pdpt_page = vmem->request_page();
-            memset(pdpt_page, 0, sizeof(page_table_t));
-            vmem->pml4->entries[pml4_index].value = (UINT64)pdpt_page | flags;
-        }
+        pdpt_page = pmm_request_page(vmm->pmm);
+        memset(pdpt_page, 0, sizeof(page_table_t));
+        vmm->pml4->entries[pml4_index].value = (UINT64)pdpt_page | flags;
     }
 
-    page_table_t *pdpt = (page_table_t *)(vmem->pml4->entries[pml4_index].value & PHYS_ADDR_MASK);
+    page_table_t *pdpt = (page_table_t *)(vmm->pml4->entries[pml4_index].value & PHYS_ADDR_MASK);
     if (!(pdpt->entries[pdpt_index].value & PAGE_TABLE_FLAGS_PRESENT))
     {
         void *pdt_page = nullptr;
-        if (vmem->request_page != nullptr)
-        {
-            pdt_page = vmem->request_page();
-            memset(pdt_page, 0, sizeof(page_table_t));
-            pdpt->entries[pdpt_index].value = (UINT64)pdt_page | flags;
-        }
+        pdt_page = pmm_request_page(vmm->pmm);
+        memset(pdt_page, 0, sizeof(page_table_t));
+        pdpt->entries[pdpt_index].value = (UINT64)pdt_page | flags;
     }
 
     page_table_t *pdt = (page_table_t *)(pdpt->entries[pdpt_index].value & PHYS_ADDR_MASK);
     if (!(pdt->entries[pdt_index].value & PAGE_TABLE_FLAGS_PRESENT))
     {
         void *pt_page = nullptr;
-        if (vmem->request_page != nullptr)
-        {
-            pt_page = vmem->request_page();
-            memset(pt_page, 0, sizeof(page_table_t));
-            pdt->entries[pdt_index].value = (UINT64)pt_page | flags;
-        }
+        pt_page = pmm_request_page(vmm->pmm);
+        memset(pt_page, 0, sizeof(page_table_t));
+        pdt->entries[pdt_index].value = (UINT64)pt_page | flags;
     }
 
     page_table_t *pt = (page_table_t *)(pdt->entries[pdt_index].value & PHYS_ADDR_MASK);
