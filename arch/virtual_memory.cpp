@@ -3,7 +3,7 @@
 
 #define PHYS_ADDR_MASK 0x000FFFFFFFFFF000
 
-void init_vmm(vmm_handle_t *vmm,pmm_handle_t*pmm)
+void init_vmm(vmm_handle_t *vmm, pmm_handle_t *pmm)
 {
     vmm->pml4 = (page_table_t *)pmm_request_page(pmm);
     memset(vmm->pml4, 0, sizeof(page_table_t));

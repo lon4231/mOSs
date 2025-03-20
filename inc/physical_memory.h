@@ -5,6 +5,7 @@
 struct freelist_node_t
 {
 freelist_node_t*next;
+freelist_node_t*virtual_next;
 };
 
 struct pmm_handle_t
