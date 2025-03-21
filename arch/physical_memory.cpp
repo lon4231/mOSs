@@ -1,6 +1,6 @@
 #include "physical_memory.h"
 
-void freelist_add_page(pmm_handle_t *pmm, freelist_node_t *new_node)
+inline void freelist_add_page(pmm_handle_t *pmm, freelist_node_t *new_node)
 {
     new_node->next = pmm->head;
     pmm->head = new_node;

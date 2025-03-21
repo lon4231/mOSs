@@ -13,6 +13,7 @@ struct efi_t
     EFI_RUNTIME_SERVICES *rs;
     EFI_LOADED_IMAGE_PROTOCOL *loaded_image;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *filesys;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL*    gop;
     EFI_HANDLE img_handle;
 };
 

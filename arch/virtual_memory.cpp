@@ -63,3 +63,31 @@ void *vmm_map_higher_half(vmm_handle_t *vmm, void *phys_addr, UINT32 flags, UINT
     vmm->higher_half_index += pages;
     return virt_addr;
 }
+
+void *virt_to_phys_addr(vmm_handle_t *vmm, void *phys_addr, void *virt_addr)
+{
+    UINT64 pml4_index = (((UINT64)virt_addr) >> 39) & 0x1FF;
+    UINT64 pdpt_index = (((UINT64)virt_addr) >> 30) & 0x1FF;
+    UINT64 pdt_index = (((UINT64)virt_addr) >> 21) & 0x1FF;
+    UINT64 pt_index = (((UINT64)virt_addr) >> 12) & 0x1FF;
+
+    page_table_t *pdpt = (page_table_t *)(vmm->pml4->entries[pml4_index].value & PHYS_ADDR_MASK);
+    if (pdpt == nullptr)
+    {
+        return nullptr;
+    }
+
+    page_table_t *pdt = (page_table_t *)(pdpt->entries[pdpt_index].value & PHYS_ADDR_MASK);
+    if (pdt == nullptr)
+    {
+        return nullptr;
+    }
+
+    page_table_t *pt = (page_table_t *)(pdt->entries[pdt_index].value & PHYS_ADDR_MASK);
+    if (pt == nullptr)
+    {
+        return nullptr;
+    }
+
+    return (void *)(pt->entries[pt_index].value & PHYS_ADDR_MASK);
+}

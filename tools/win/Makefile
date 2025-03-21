@@ -1,5 +1,4 @@
-.PHONY: all boot_fstage kernel_fstage build_wgpt build_disk qemu_test
-.NOTPARALLEL: all boot_fstage kernel_fstage build_wgpt build_disk qemu_test
+.PHONY: all boot_fstage kernel_fstage build_wgpt build_disk qemu_test kernel bootloader
 
 gcc:=gcc
 cc :=g++
@@ -32,17 +31,21 @@ kernel_targets 		:=$(patsubst %.cpp,%.krn,$(kernel_src))
 kernel_real_targets :=$(notdir $(patsubst %.cpp,%.o,$(kernel_src)))
 
 
-all: $(boot_targets) boot_fstage $(kernel_targets) kernel_fstage build_disk qemu_test
+all: bootloader boot_fstage kernel kernel_fstage build_disk qemu_test
 
-build_disk:
+bootloader: $(boot_targets)
+
+kernel: $(kernel_targets)
+
+build_disk: boot_fstage kernel_fstage
 	$(wgpt) -i moss.img -ae /EFI/BOOT/ kernel.bin 
 	$(rm) BOOTX64.EFI FILE.TXT kernel.bin
 
-boot_fstage:
+boot_fstage: bootloader
 	$(cc) $(boot_real_targets) -o BOOTX64.EFI $(boot_cflags) $(boot_ldflags) $(boot_inc)
 	$(rm) $(boot_real_targets)
 
-kernel_fstage:
+kernel_fstage: kernel
 	$(ld) $(kernel_ldflags) -Tkernel/kernel.ld --image-base=0 -o kernel.obj $(kernel_real_targets)
 	$(objcopy) -O binary kernel.obj kernel.bin
 	$(rm) $(kernel_real_targets) kernel.obj
@@ -50,7 +53,7 @@ kernel_fstage:
 build_wgpt:
 	$(gcc) -o tools/wgpt $(wgpt_src) $(wgpt_cflags)
 
-qemu_test:
+qemu_test: build_disk
 	$(qemu) -drive format=raw,file=moss.img $(qemu_flags)
 	$(cls)
 

@@ -18,6 +18,7 @@ typedef UINT64 EFI_VIRTUAL_ADDRESS;
 #define EFI_FILE_INFO_ID {0x09576e92, 0x6d3f, 0x11d2, {0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
 #define EFI_LOADED_IMAGE_PROTOCOL_GUID {0x5B1B31A1, 0x9562, 0x11d2, {0x8E, 0x3F, 0x00, 0xA0, 0xC9, 0x69, 0x72, 0x3B}}
 #define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID {0x964e5b22, 0x6459, 0x11d2, {0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
+#define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID {0x9042a9de, 0x23dc, 0x4a38, {0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a}}
 
 #define EFI_FILE_MODE_READ 0x0000000000000001
 #define EFI_FILE_MODE_WRITE 0x0000000000000002
@@ -74,6 +75,16 @@ enum EFI_MEMORY_TYPE
     EfiUnacceptedMemoryType,
     EfiMaxMemoryType
 };
+
+enum EFI_GRAPHICS_PIXEL_FORMAT
+{
+PixelRedGreenBlueReserved8BitPerColor,
+PixelBlueGreenRedReserved8BitPerColor,
+PixelBitMask,
+PixelBltOnly,
+PixelFormatMax
+};
+
 
 struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 struct EFI_BOOT_SERVICES;
@@ -134,6 +145,37 @@ struct EFI_TIME_CAPABILITIES
     UINT32 Accuracy;
     BOOLEAN SetsToZero;
 };
+
+struct EFI_PIXEL_BITMASK
+{
+UINT32 RedMask;
+UINT32 GreenMask;
+UINT32 BlueMask;
+UINT32 ReservedMask;
+};
+
+
+struct EFI_GRAPHICS_OUTPUT_MODE_INFORMATION
+{
+    UINT32 Version;
+    UINT32 HorizontalResolution;
+    UINT32 VerticalResolution;
+    EFI_GRAPHICS_PIXEL_FORMAT PixelFormat;
+    EFI_PIXEL_BITMASK PixelInformation;
+    UINT32 PixelsPerScanLine;
+};
+
+
+struct EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE 
+{
+UINT32 MaxMode;
+UINT32 Mode;
+EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+UINTN SizeOfInfo;
+EFI_PHYSICAL_ADDRESS FrameBufferBase;
+UINTN FrameBufferSize;
+};
+    
 
 typedef EFIAPI EFI_STATUS (*EFI_EXIT_BOOT_SERVICES)(IN EFI_HANDLE ImageHandle, IN UINTN MapKey);
 typedef EFI_STATUS(EFIAPI *EFI_ALLOCATE_POOL)(IN EFI_MEMORY_TYPE PoolType, IN UINTN Size, OUT VOID **Buffer);
@@ -317,3 +359,12 @@ struct EFI_LOADED_IMAGE_PROTOCOL
     EFI_MEMORY_TYPE ImageDataType;
     UNDEFINED_FUNC Unload;
 };
+
+struct EFI_GRAPHICS_OUTPUT_PROTOCOL 
+{
+UNDEFINED_FUNC QueryMode;
+UNDEFINED_FUNC SetMode;
+UNDEFINED_FUNC Blt;
+EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE *Mode;
+};
+    
