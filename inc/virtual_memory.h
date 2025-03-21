@@ -37,4 +37,4 @@ void vmm_map_pages(vmm_handle_t *vmm, void *phys_addr, void *virt_addr, UINT32 f
 
 void *vmm_map_higher_half(vmm_handle_t *vmm, void *phys_addr, UINT32 flags, UINTN pages);
 
-void *virt_to_phys_addr(vmm_handle_t *vmm, void *phys_addr, void *virt_addr);
+void *virt_to_phys_addr(vmm_handle_t *vmm, void *virt_addr);
