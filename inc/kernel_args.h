@@ -6,6 +6,7 @@
 #include "idt.h"
 #include "physical_memory.h"
 #include "virtual_memory.h"
+#include "device_manager.h"
 
 #define KERNEL_STACK_PAGES 16
 #define KERNEL_BSS_SIZE 16
@@ -30,4 +31,5 @@ struct kernel_args_t
 
     pmm_handle_t pmm;
     vmm_handle_t vmm;
+    device_manager_t dm;
 };

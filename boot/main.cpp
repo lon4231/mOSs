@@ -72,6 +72,9 @@ extern "C" EFIAPI EFI_STATUS emain(EFI_HANDLE img_handle, EFI_SYSTEM_TABLE *syst
 
     efi->bs->ExitBootServices(efi->img_handle, boot_data->mmap.key);
 
+
+
+
     boot_to_kernel(boot_data);
 
     asm volatile("cli;hlt");

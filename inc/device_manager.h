@@ -1,4 +1,12 @@
+#pragma once
+
 #include "std_types.h"
+
+enum DEVICE_IDS
+{
+DEVICE_ID_FRAMEBUFFER,
+
+};
 
 struct device_node_t
 {
