@@ -46,7 +46,13 @@ void boot_to_kernel(kernel_args_t *kernel_args,boot_data_t*boot_data)
     kernel_args->kernel_stack=vmm_map_higher_half(&kernel_args->vmm,kernel_args->kernel_stack,0b111,KERNEL_STACK_PAGES);
     kernel_args=(kernel_args_t*)vmm_map_higher_half(&kernel_args->vmm,kernel_args,0b111,SIZE_TO_PAGES(sizeof(kernel_args_t)));
 
+    device_node_t*fb_device=(device_node_t*)pmm_request_page(&kernel_args->pmm);
+    sgi_t*sgi=(sgi_t*)((UINT8*)fb_device+sizeof(device_node_t));
 
+    fb_device->dev_id=DEVICE_ID_FRAMEBUFFER;
+    fb_device->dev_data=sgi;
+
+    add_device(&kernel_args->dm,fb_device);
 
     asm volatile(
         "cli;"
