@@ -6,5 +6,4 @@ dm->device_count++;
 
 new_device->next=dm->head;
 dm->head=new_device;
-
 }

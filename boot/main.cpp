@@ -76,7 +76,7 @@ extern "C" EFIAPI EFI_STATUS emain(EFI_HANDLE img_handle, EFI_SYSTEM_TABLE *syst
     printf(u"usable memory: %d MiB\r\n", (usable_memory * PAGE_SIZE) / 0x100000);
     printf(u"kernel size: %u KiB\r\n", (kernel_args->kernel_bin_pages * PAGE_SIZE) / 0x400);
 
-    // efi->bs->ExitBootServices(efi->img_handle, kernel_args->mmap.key);
+    efi->bs->ExitBootServices(efi->img_handle, kernel_args->mmap.key);
 
     boot_to_kernel(kernel_args, &boot_data);
 
