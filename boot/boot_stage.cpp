@@ -45,17 +45,23 @@ void boot_to_kernel(kernel_args_t *kernel_args,boot_data_t*boot_data)
     kernel_args->kernel_bin=vmm_map_higher_half(&kernel_args->vmm,kernel_args->kernel_bin,0b111,kernel_args->kernel_bin_pages);
     kernel_args->kernel_stack=vmm_map_higher_half(&kernel_args->vmm,kernel_args->kernel_stack,0b111,KERNEL_STACK_PAGES);
     kernel_args=(kernel_args_t*)vmm_map_higher_half(&kernel_args->vmm,kernel_args,0b111,SIZE_TO_PAGES(sizeof(kernel_args_t)));
-
+    
     device_node_t*fb_device=(device_node_t*)pmm_request_page(&kernel_args->pmm);
-    sgi_t*sgi=(sgi_t*)((UINT8*)fb_device+sizeof(device_node_t));
-
+    sgi_t*sgi=(sgi_t*)(((UINT8*)fb_device)+sizeof(device_node_t));
+    *sgi=boot_data->sgi;
+    sgi->buffer=(sgi_pixel_t*)vmm_map_higher_half(&kernel_args->vmm,sgi->buffer,0b111,SIZE_TO_PAGES(sgi->width*sgi->height*sizeof(sgi_pixel_t)));
     fb_device->dev_id=DEVICE_ID_FRAMEBUFFER;
     fb_device->dev_data=sgi;
-
+    fb_device=(device_node_t*)vmm_map_higher_half(&kernel_args->vmm,fb_device,0b111,1);
     add_device(&kernel_args->dm,fb_device);
+    
+    memset(boot_data->sgi.buffer,0,boot_data->sgi.width*boot_data->sgi.height*sizeof(sgi_pixel_t));
+    
+    
 
     asm volatile(
         "cli;"
+        "movq %[page_table],%%CR3;"
         "lgdt %[gdt];"
         "ltr %[tss];"
         "lidt %[idtr];"
@@ -74,7 +80,6 @@ void boot_to_kernel(kernel_args_t *kernel_args,boot_data_t*boot_data)
         "movq %%RAX, %%SS;"
         
         
-        "movq %[page_table],%%CR3;"
         "movq %[kstack], %%RSP;"
         "callq %[kernel_bin];" ::
         [gdt] "m"(kernel_args->gdtr),

@@ -1,4 +1,6 @@
 .PHONY: all boot_fstage kernel_fstage build_wgpt build_disk qemu_test kernel bootloader
+.NOTPARALLEL: all
+
 
 gcc:=gcc
 cc :=g++

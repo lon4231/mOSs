@@ -5,6 +5,7 @@
 
 void init_vmm(vmm_handle_t *vmm, pmm_handle_t *pmm)
 {
+    vmm->pmm=pmm;
     vmm->pml4 = (page_table_t *)pmm_request_page(pmm);
     memset(vmm->pml4, 0, sizeof(page_table_t));
     vmm->higher_half_index = 0;

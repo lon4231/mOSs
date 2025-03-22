@@ -1,6 +1,8 @@
 #include "physical_memory.h"
+#include "std_string.h"
+#include "printf.h"
 
-inline void freelist_add_page(pmm_handle_t *pmm, freelist_node_t *new_node)
+void freelist_add_page(pmm_handle_t *pmm, freelist_node_t *new_node)
 {
     new_node->next = pmm->head;
     pmm->head = new_node;
@@ -19,10 +21,12 @@ void init_pmm(pmm_handle_t *pmm, mmap_t *mmap)
         {
             pmm->total_pages += desc->NumberOfPages;
 
-            for (UINTN n = 0; n < desc->NumberOfPages; ++n)
+            for (UINTN n = 0; n<desc->NumberOfPages; ++n)
             {
-                freelist_add_page(pmm, (freelist_node_t *)(desc->PhysicalStart + (n * PAGE_SIZE)));
+                freelist_node_t*new_node=(freelist_node_t *)(((UINT8*)desc->PhysicalStart) + (n * PAGE_SIZE));
+                freelist_add_page(pmm,new_node);
             }
+            
         }
     }
 }
@@ -30,9 +34,7 @@ void init_pmm(pmm_handle_t *pmm, mmap_t *mmap)
 void *pmm_request_page(pmm_handle_t *pmm)
 {
     void *page = (void *)pmm->head;
-
     pmm->head = pmm->head->next;
-
     return page;
 }
 
