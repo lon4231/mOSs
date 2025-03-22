@@ -7,8 +7,8 @@
 #include "virtual_memory.h"
 #include "sgi.h"
 
-static kernel_args_t*kargs;
-static sgi_t*sgi;
+static kernel_args_t *kargs;
+static sgi_t *sgi;
 
 extern "C" void _putchar(CHAR16 chr) {}
 
@@ -16,12 +16,11 @@ extern "C" void __attribute__((noreturn, section(".kernel"))) kmain(kernel_args_
 {
     asm volatile("sti");
 
-    kargs=kargs_ptr;
+    kargs = kargs_ptr;
 
-    sgi=(sgi_t*)kargs->dm.head->dev_data;
+    sgi = (sgi_t *)kargs->dm.head->dev_data;
 
-    memset(sgi->buffer,128,sgi->width*sgi->height*sizeof(sgi_pixel_t));
-
+    memset(sgi->buffer, 128, sgi->width * sgi->height * sizeof(sgi_pixel_t));
 
     asm volatile("cli;hlt");
 }

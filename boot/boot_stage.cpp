@@ -1,8 +1,7 @@
 #include "boot.h"
 #include "std_string.h"
 
-
-void boot_to_kernel(kernel_args_t *kernel_args,boot_data_t*boot_data)
+void boot_to_kernel(kernel_args_t *kernel_args, boot_data_t *boot_data)
 {
     kernel_args->gdt.null = 0x0000000000000000;
     kernel_args->gdt.kernel_code_64 = 0x00AF9A000000FFFF;
@@ -34,30 +33,29 @@ void boot_to_kernel(kernel_args_t *kernel_args,boot_data_t*boot_data)
     init_pmm(&kernel_args->pmm, &kernel_args->mmap);
     init_vmm(&kernel_args->vmm, &kernel_args->pmm);
 
-
-    for(UINTN i=0;i<(kernel_args->mmap.size/kernel_args->mmap.desc_size);++i)
+    for (UINTN i = 0; i < (kernel_args->mmap.size / kernel_args->mmap.desc_size); ++i)
     {
-        mmap_mem_desc_t*desc=(mmap_mem_desc_t*)(((UINT8*)kernel_args->mmap.map)+(i*kernel_args->mmap.desc_size));
-        if(desc->Type==1)
-        {vmm_map_pages(&kernel_args->vmm,(void*)desc->PhysicalStart,(void*)desc->PhysicalStart,0b111,desc->NumberOfPages);}
+        mmap_mem_desc_t *desc = (mmap_mem_desc_t *)(((UINT8 *)kernel_args->mmap.map) + (i * kernel_args->mmap.desc_size));
+        if (desc->Type == 1)
+        {
+            vmm_map_pages(&kernel_args->vmm, (void *)desc->PhysicalStart, (void *)desc->PhysicalStart, 0b111, desc->NumberOfPages);
+        }
     }
 
-    kernel_args->kernel_bin=vmm_map_higher_half(&kernel_args->vmm,kernel_args->kernel_bin,0b111,kernel_args->kernel_bin_pages);
-    kernel_args->kernel_stack=vmm_map_higher_half(&kernel_args->vmm,kernel_args->kernel_stack,0b111,KERNEL_STACK_PAGES);
-    kernel_args=(kernel_args_t*)vmm_map_higher_half(&kernel_args->vmm,kernel_args,0b111,SIZE_TO_PAGES(sizeof(kernel_args_t)));
-    
-    device_node_t*fb_device=(device_node_t*)pmm_request_page(&kernel_args->pmm);
-    sgi_t*sgi=(sgi_t*)(((UINT8*)fb_device)+sizeof(device_node_t));
-    *sgi=boot_data->sgi;
-    sgi->buffer=(sgi_pixel_t*)vmm_map_higher_half(&kernel_args->vmm,sgi->buffer,0b111,SIZE_TO_PAGES(sgi->width*sgi->height*sizeof(sgi_pixel_t)));
-    fb_device->dev_id=DEVICE_ID_FRAMEBUFFER;
-    fb_device->dev_data=sgi;
-    fb_device=(device_node_t*)vmm_map_higher_half(&kernel_args->vmm,fb_device,0b111,1);
-    add_device(&kernel_args->dm,fb_device);
-    
-    memset(boot_data->sgi.buffer,0,boot_data->sgi.width*boot_data->sgi.height*sizeof(sgi_pixel_t));
-    
-    
+    kernel_args->kernel_bin = vmm_map_higher_half(&kernel_args->vmm, kernel_args->kernel_bin, 0b111, kernel_args->kernel_bin_pages);
+    kernel_args->kernel_stack = vmm_map_higher_half(&kernel_args->vmm, kernel_args->kernel_stack, 0b111, KERNEL_STACK_PAGES);
+    kernel_args = (kernel_args_t *)vmm_map_higher_half(&kernel_args->vmm, kernel_args, 0b111, SIZE_TO_PAGES(sizeof(kernel_args_t)));
+
+    device_node_t *fb_device = (device_node_t *)pmm_request_page(&kernel_args->pmm);
+    sgi_t *sgi = (sgi_t *)(((UINT8 *)fb_device) + sizeof(device_node_t));
+    *sgi = boot_data->sgi;
+    sgi->buffer = (sgi_pixel_t *)vmm_map_higher_half(&kernel_args->vmm, sgi->buffer, 0b111, SIZE_TO_PAGES(sgi->width * sgi->height * sizeof(sgi_pixel_t)));
+    fb_device->dev_id = DEVICE_ID_FRAMEBUFFER;
+    fb_device->dev_data = sgi;
+    fb_device = (device_node_t *)vmm_map_higher_half(&kernel_args->vmm, fb_device, 0b111, 1);
+    add_device(&kernel_args->dm, fb_device);
+
+    memset(boot_data->sgi.buffer, 0, boot_data->sgi.width * boot_data->sgi.height * sizeof(sgi_pixel_t));
 
     asm volatile(
         "cli;"
@@ -65,12 +63,12 @@ void boot_to_kernel(kernel_args_t *kernel_args,boot_data_t*boot_data)
         "lgdt %[gdt];"
         "ltr %[tss];"
         "lidt %[idtr];"
-        
+
         "pushq $0x8;"
         "leaq 1f(%%RIP), %%RAX;"
         "pushq %%RAX;"
         "lretq;"
-        
+
         "1:;"
         "movq $0x10, %%RAX;"
         "movq %%RAX, %%DS;"
@@ -78,14 +76,13 @@ void boot_to_kernel(kernel_args_t *kernel_args,boot_data_t*boot_data)
         "movq %%RAX, %%FS;"
         "movq %%RAX, %%GS;"
         "movq %%RAX, %%SS;"
-        
-        
+
         "movq %[kstack], %%RSP;"
         "callq %[kernel_bin];" ::
-        [gdt] "m"(kernel_args->gdtr),
+            [gdt] "m"(kernel_args->gdtr),
         [tss] "r"(0x48),
         [idtr] "m"(kernel_args->idtr),
-        [page_table]"r"(kernel_args->vmm.pml4),
+        [page_table] "r"(kernel_args->vmm.pml4),
         [kstack] "gm"(kernel_args->kernel_stack + (KERNEL_STACK_PAGES * PAGE_SIZE)),
         [kernel_bin] "r"(kernel_args->kernel_bin), "c"(kernel_args)
         : "rax", "memory");

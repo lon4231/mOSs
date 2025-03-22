@@ -21,12 +21,11 @@ void init_pmm(pmm_handle_t *pmm, mmap_t *mmap)
         {
             pmm->total_pages += desc->NumberOfPages;
 
-            for (UINTN n = 0; n<desc->NumberOfPages; ++n)
+            for (UINTN n = 0; n < desc->NumberOfPages; ++n)
             {
-                freelist_node_t*new_node=(freelist_node_t *)(((UINT8*)desc->PhysicalStart) + (n * PAGE_SIZE));
-                freelist_add_page(pmm,new_node);
+                freelist_node_t *new_node = (freelist_node_t *)(((UINT8 *)desc->PhysicalStart) + (n * PAGE_SIZE));
+                freelist_add_page(pmm, new_node);
             }
-            
         }
     }
 }

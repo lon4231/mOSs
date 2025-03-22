@@ -5,7 +5,7 @@
 
 void init_vmm(vmm_handle_t *vmm, pmm_handle_t *pmm)
 {
-    vmm->pmm=pmm;
+    vmm->pmm = pmm;
     vmm->pml4 = (page_table_t *)pmm_request_page(pmm);
     memset(vmm->pml4, 0, sizeof(page_table_t));
     vmm->higher_half_index = 0;
@@ -65,7 +65,7 @@ void *vmm_map_higher_half(vmm_handle_t *vmm, void *phys_addr, UINT32 flags, UINT
     return virt_addr;
 }
 
-void *virt_to_phys_addr(vmm_handle_t *vmm,void *virt_addr)
+void *virt_to_phys_addr(vmm_handle_t *vmm, void *virt_addr)
 {
     UINT64 pml4_index = (((UINT64)virt_addr) >> 39) & 0x1FF;
     UINT64 pdpt_index = (((UINT64)virt_addr) >> 30) & 0x1FF;

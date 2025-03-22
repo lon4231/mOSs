@@ -78,13 +78,12 @@ enum EFI_MEMORY_TYPE
 
 enum EFI_GRAPHICS_PIXEL_FORMAT
 {
-PixelRedGreenBlueReserved8BitPerColor,
-PixelBlueGreenRedReserved8BitPerColor,
-PixelBitMask,
-PixelBltOnly,
-PixelFormatMax
+    PixelRedGreenBlueReserved8BitPerColor,
+    PixelBlueGreenRedReserved8BitPerColor,
+    PixelBitMask,
+    PixelBltOnly,
+    PixelFormatMax
 };
-
 
 struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 struct EFI_BOOT_SERVICES;
@@ -148,12 +147,11 @@ struct EFI_TIME_CAPABILITIES
 
 struct EFI_PIXEL_BITMASK
 {
-UINT32 RedMask;
-UINT32 GreenMask;
-UINT32 BlueMask;
-UINT32 ReservedMask;
+    UINT32 RedMask;
+    UINT32 GreenMask;
+    UINT32 BlueMask;
+    UINT32 ReservedMask;
 };
-
 
 struct EFI_GRAPHICS_OUTPUT_MODE_INFORMATION
 {
@@ -165,17 +163,15 @@ struct EFI_GRAPHICS_OUTPUT_MODE_INFORMATION
     UINT32 PixelsPerScanLine;
 };
 
-
-struct EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE 
+struct EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE
 {
-UINT32 MaxMode;
-UINT32 Mode;
-EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
-UINTN SizeOfInfo;
-EFI_PHYSICAL_ADDRESS FrameBufferBase;
-UINTN FrameBufferSize;
+    UINT32 MaxMode;
+    UINT32 Mode;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION *Info;
+    UINTN SizeOfInfo;
+    EFI_PHYSICAL_ADDRESS FrameBufferBase;
+    UINTN FrameBufferSize;
 };
-    
 
 typedef EFIAPI EFI_STATUS (*EFI_EXIT_BOOT_SERVICES)(IN EFI_HANDLE ImageHandle, IN UINTN MapKey);
 typedef EFI_STATUS(EFIAPI *EFI_ALLOCATE_POOL)(IN EFI_MEMORY_TYPE PoolType, IN UINTN Size, OUT VOID **Buffer);
@@ -360,11 +356,10 @@ struct EFI_LOADED_IMAGE_PROTOCOL
     UNDEFINED_FUNC Unload;
 };
 
-struct EFI_GRAPHICS_OUTPUT_PROTOCOL 
+struct EFI_GRAPHICS_OUTPUT_PROTOCOL
 {
-UNDEFINED_FUNC QueryMode;
-UNDEFINED_FUNC SetMode;
-UNDEFINED_FUNC Blt;
-EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE *Mode;
+    UNDEFINED_FUNC QueryMode;
+    UNDEFINED_FUNC SetMode;
+    UNDEFINED_FUNC Blt;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE *Mode;
 };
-    
