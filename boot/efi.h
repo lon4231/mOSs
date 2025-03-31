@@ -1,11 +1,54 @@
 #pragma once
 
-#include "std_types.h"
-#include "mmap.h"
+#include <cstdint>
+#include <cstddef>
 
 #define UNDEFINED_FUNC VOID *
 
 #define EFIAPI __attribute__((ms_abi))
+
+#define IN
+#define OUT
+#define OPTIONAL
+#define CONST const
+
+#define PAGE_SIZE 4096
+
+typedef bool BOOLEAN;
+
+typedef size_t UINTN;
+typedef ssize_t INTN;
+
+typedef int8_t INT8;
+typedef uint8_t UINT8;
+typedef int16_t INT16;
+typedef uint16_t UINT16;
+typedef int32_t INT32;
+typedef uint32_t UINT32;
+typedef int64_t INT64;
+typedef uint64_t UINT64;
+
+typedef char CHAR8;
+typedef char16_t CHAR16;
+
+typedef void VOID;
+
+#define MMAP_MEMORY_UC 0x0000000000000001
+#define MMAP_MEMORY_WC 0x0000000000000002
+#define MMAP_MEMORY_WT 0x0000000000000004
+#define MMAP_MEMORY_WB 0x0000000000000008
+#define MMAP_MEMORY_UCE 0x0000000000000010
+#define MMAP_MEMORY_WP 0x0000000000001000
+#define MMAP_MEMORY_RP 0x0000000000002000
+#define MMAP_MEMORY_XP 0x0000000000004000
+#define MMAP_MEMORY_NV 0x0000000000008000
+#define MMAP_MEMORY_MORE_RELIABLE 0x0000000000010000
+#define MMAP_MEMORY_RO 0x0000000000020000
+#define MMAP_MEMORY_SP 0x0000000000040000
+#define MMAP_MEMORY_CPU_CRYPTO 0x0000000000080000
+#define MMAP_MEMORY_RUNTIME 0x8000000000000000
+#define MMAP_MEMORY_ISA_VALID 0x4000000000000000
+#define MMAP_MEMORY_ISA_MASK 0x0FFFF00000000000
 
 typedef UINTN EFI_STATUS;
 typedef VOID *EFI_HANDLE;

@@ -2,8 +2,27 @@
 
 #include "efi.h"
 #include "std_string.h"
-#include "mmap.h"
 #include "printf.h"
+
+#define SIZE_TO_PAGES(x) (((x) + (PAGE_SIZE) - 1) / (PAGE_SIZE))
+
+struct mmap_mem_desc_t
+{
+    UINT32 Type;
+    UINT64 PhysicalStart;
+    UINT64 VirtualStart;
+    UINT64 NumberOfPages;
+    UINT64 Attribute;
+};
+
+struct mmap_t
+{
+    UINTN size;
+    mmap_mem_desc_t *map;
+    UINTN key;
+    UINTN desc_size;
+    UINT32 desc_ver;
+};
 
 struct efi_t
 {
@@ -13,7 +32,7 @@ struct efi_t
     EFI_RUNTIME_SERVICES *rs;
     EFI_LOADED_IMAGE_PROTOCOL *loaded_image;
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *filesys;
-    EFI_GRAPHICS_OUTPUT_PROTOCOL*    gop;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
     EFI_HANDLE img_handle;
 };
 
