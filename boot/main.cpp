@@ -25,6 +25,7 @@ extern "C" EFIAPI EFI_STATUS emain(EFI_HANDLE img_handle, EFI_SYSTEM_TABLE *syst
     efi_init(img_handle, systab);
 
 
+
     asm volatile("cli;hlt");
 
     return 0;

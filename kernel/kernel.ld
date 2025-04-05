@@ -12,5 +12,6 @@ SECTIONS {
     }
     .bss : {
         *(.bss*);
+        *(COMMON);
     }
 }
