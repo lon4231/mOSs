@@ -1,5 +1,5 @@
 ENTRY(kmain);
-SECTIONS {    
+SECTIONS {
     .text : {
         KEEP(*(.kernel*));
         *(.text*);

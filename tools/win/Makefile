@@ -18,7 +18,7 @@ qemu_flags          :=-bios tools/bios64.bin -m 512M -vga std -display sdl -name
 
 boot_src            :=$(wildcard boot/*.cpp) $(wildcard std/*.cpp) printf/printf.cpp
 boot_inc            :=-Istd -Iboot -Iprintf
-boot_cflags	        :=-w -O3 -s -mno-red-zone -ffreestanding -nostdlib -fno-stack-protector -fno-exceptions -fno-rtti -fPIE -std=c++20
+boot_cflags	        :=-w -O3 -s -mno-red-zone -ffreestanding -nostdlib -fno-stack-protector -fno-exceptions -fno-rtti -std=c++20
 boot_ldflags        :=-nostdlib -Wl,--subsystem,10 -e emain
 
 boot_targets        :=$(patsubst %.cpp,%.boot,$(boot_src))
@@ -26,8 +26,8 @@ boot_o_files        :=$(notdir $(patsubst %.cpp,%.o,$(boot_src)))
 
 kernel_src          :=$(wildcard kernel/*.cpp) printf/printf.cpp
 kernel_inc          :=-Iinc -Iprintf
-kernel_cflags       :=-w -O3 -s -mno-red-zone -ffreestanding -nostdlib -fno-stack-protector -fno-exceptions -fno-rtti -fPIE -std=c++20
-kernel_ldflags      :=-e kmain -nostdlib -pie
+kernel_cflags       :=-w -O3 -s -mno-red-zone -ffreestanding -nostdlib -fno-stack-protector -fno-exceptions -fPIE -pie -fno-rtti -std=c++20
+kernel_ldflags      :=-e kmain -pie -nostdlib
 
 kernel_targets      :=$(patsubst %.cpp,%.kernel,$(kernel_src))
 kernel_o_files      :=$(notdir $(patsubst %.cpp,%.o,$(kernel_src)))
@@ -39,8 +39,8 @@ bootloader: $(boot_targets)
 	$(rm) $(boot_o_files)
 
 kernel: $(kernel_targets)
-	$(ld) $(kernel_ldflags) -Tkernel/kernel.ld --image-base=0 -o kernel.obj $(kernel_o_files)
-	$(objcopy) -O binary kernel.obj kernel.bin
+	$(ld) $(kernel_ldflags) --gc-sections -Tkernel/kernel.ld --image-base=0 -o kernel.obj $(kernel_o_files)
+	$(objcopy) --strip-unneeded -O binary kernel.obj kernel.bin
 	$(rm) $(kernel_o_files) kernel.obj
 
 
@@ -59,7 +59,7 @@ build_wgpt:
 
 
 %.boot : %.cpp
-	$(cc) $*.cpp -o $(notdir $*.o) -c $(boot_inc) $(boot_cflags) $(boot_ldflags)
+	$(cc) $*.cpp -o $(notdir $*.o) -c $(boot_inc) $(boot_cflags)
 
 %.kernel : %.cpp
-	$(cc) $*.cpp -o $(notdir $*.o) -c $(kernel_inc) $(kernel_cflags) $(kernel_ldflags)
+	$(cc) $*.cpp -o $(notdir $*.o) -c $(kernel_inc) $(kernel_cflags)
