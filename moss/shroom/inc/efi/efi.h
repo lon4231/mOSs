@@ -12,5 +12,6 @@
 #include <efi_system_table.h>
 
 #include <efi_simple_file_system_protocol.h>
+#include <efi_loaded_image_protocol.h>
 
 #endif
