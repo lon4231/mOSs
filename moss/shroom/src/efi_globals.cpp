@@ -1,28 +1,56 @@
 #include "efi_globals.h"
 
-EFI_SYSTEM_TABLE*efi_systab_handle;
+EFI_SYSTEM_TABLE *efi_systab_handle;
 
-EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL*efi_cout_handle;
-EFI_SIMPLE_TEXT_INPUT_PROTOCOL*efi_cin_handle;
+EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *efi_cout_handle;
+EFI_SIMPLE_TEXT_INPUT_PROTOCOL *efi_cin_handle;
 
-EFI_BOOT_SERVICES*efi_boot_services_handle;
-EFI_RUNTIME_SERVICES*efi_runtime_services_handle;
+EFI_BOOT_SERVICES *efi_boot_services_handle;
+EFI_RUNTIME_SERVICES *efi_runtime_services_handle;
 
-EFI_SIMPLE_FILE_SYSTEM_PROTOCOL efi_fs_protocol_handle;
+EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *efi_fs_protocol_handle;
 EFI_HANDLE efi_image_handle;
 
+UINTN efi_graphics_output_protocol_count;
+EFI_GRAPHICS_OUTPUT_PROTOCOL **efi_graphics_output_protocol_handles;
 
-void init_efi_services(EFI_SYSTEM_TABLE*systab,EFI_HANDLE img_handle)
+void *locate_efi_protocol(EFI_GUID guid)
 {
-efi_systab_handle=systab;
-efi_image_handle=img_handle;
+    void *interface;
+    efi_boot_services_handle->LocateProtocol(&guid, NULL, &interface);
+    return interface;
+}
 
-efi_cout_handle=systab->ConOut;
-efi_cin_handle=systab->ConIn;
+void *locate_efi_protocols(EFI_GUID guid, UINTN *interface_count)
+{
+    void **interfaces;
+    efi_boot_services_handle->LocateHandleBuffer(ByProtocol, &guid, NULL, interface_count, &interfaces);
+    for (UINTN i=0;i<*interface_count;++i)
+    {
+        efi_boot_services_handle->OpenProtocol(interfaces[i],&guid,&interfaces[i],efi_image_handle,NULL,EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+    }
+    
+    return interfaces;
+}
 
-efi_boot_services_handle=systab->BootServices;
-efi_runtime_services_handle=systab->RuntimeServices;
+void*open_protocol(EFI_HANDLE handle,EFI_GUID guid)
+{
+void*interface;
+efi_boot_services_handle->OpenProtocol(handle,&guid,&interface,efi_image_handle,NULL,EFI_OPEN_PROTOCOL_BY_HANDLE_PROTOCOL);
+return interface;
+}
 
+void init_efi_services(EFI_SYSTEM_TABLE *systab, EFI_HANDLE img_handle)
+{
+    efi_systab_handle = systab;
+    efi_image_handle = img_handle;
 
+    efi_cout_handle = systab->ConOut;
+    efi_cin_handle = systab->ConIn;
+
+    efi_boot_services_handle = systab->BootServices;
+    efi_runtime_services_handle = systab->RuntimeServices;
+
+    efi_graphics_output_protocol_handles = (EFI_GRAPHICS_OUTPUT_PROTOCOL**)locate_efi_protocols(EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID, &efi_graphics_output_protocol_count);
 
 }

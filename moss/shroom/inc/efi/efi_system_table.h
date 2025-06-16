@@ -2,8 +2,8 @@
 #define _EFI_SYSTEM_TABLE_DEFINED_
 
 #include <efi_types.h>
-#include <efi_stip.h>
-#include <efi_stop.h>
+#include <efi_simple_text_input_protocol.h>
+#include <efi_simple_text_output_protocol.h>
 #include <efi_runtime_services.h>
 #include <efi_boot_services.h>
 

@@ -29,8 +29,13 @@ typedef void VOID;
 
 struct EFI_GUID
 {
-    UINT8 data[16];
-} __attribute__((packed));
+    UINT32 TimeLow;
+    UINT16 TimeMid;
+    UINT16 TimeHighAndVersion;
+    UINT8  ClockSeqHighAndReserved;
+    UINT8  ClockSeqLow;
+    UINT8  Node[6];
+}__attribute__((packed));
 
 typedef UINTN EFI_STATUS;
 typedef VOID *EFI_HANDLE;
