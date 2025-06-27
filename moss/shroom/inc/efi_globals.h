@@ -13,7 +13,6 @@ extern EFI_RUNTIME_SERVICES *efi_runtime_services_handle;
 extern EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *efi_fs_protocol_handle;
 extern EFI_HANDLE efi_image_handle;
 
-
 extern UINTN efi_graphics_output_protocol_count;
 extern EFI_GRAPHICS_OUTPUT_PROTOCOL **efi_graphics_output_protocol_handles;
 

@@ -51,6 +51,6 @@ void init_efi_services(EFI_SYSTEM_TABLE *systab, EFI_HANDLE img_handle)
     efi_boot_services_handle = systab->BootServices;
     efi_runtime_services_handle = systab->RuntimeServices;
 
-    efi_graphics_output_protocol_handles = (EFI_GRAPHICS_OUTPUT_PROTOCOL**)locate_efi_protocols(EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID, &efi_graphics_output_protocol_count);
+    efi_fs_protocol_handle=
 
 }
