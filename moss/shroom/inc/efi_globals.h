@@ -10,6 +10,8 @@ extern EFI_SIMPLE_TEXT_INPUT_PROTOCOL *efi_cin_handle;
 extern EFI_BOOT_SERVICES *efi_boot_services_handle;
 extern EFI_RUNTIME_SERVICES *efi_runtime_services_handle;
 
+extern EFI_LOADED_IMAGE_PROTOCOL* efi_loaded_image_protocol;
+
 extern EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *efi_fs_protocol_handle;
 extern EFI_HANDLE efi_image_handle;
 

@@ -20,7 +20,7 @@ shroom_ld:=x86_64-w64-mingw32-ld
 
 shroom_cflags:=-O3 -s -mno-red-zone -nostdlib -ffreestanding -fno-stack-protector -Wl,--subsystem,10
 shroom_ldflags:=-e efi_main -nostdlib
-shroom_includes:= -Imoss/shroom/inc -Imoss/shroom/inc/efi
+shroom_includes:= -Imoss/shroom/inc -Imoss/shroom/inc/efi -Imoss/arch
 
 shroom_src:=$(wildcard moss/shroom/src/*.cpp) $(wildcard moss/shroom/src/*/*.cpp)
 shroom_targets:=$(patsubst %.cpp,%.o,$(shroom_src))
