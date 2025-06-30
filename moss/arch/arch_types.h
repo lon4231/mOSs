@@ -4,4 +4,6 @@
 #include <cstdint>
 #include <cstddef>
 
+#define PAGE_SIZE (4096)
+
 #endif

@@ -5,13 +5,11 @@
 #include <elf/elf.h>
 #include <arch.h>
 
-struct kernel_handle_t
+struct kernel_elf_section_t
 {
-    void *kernel_code;
-    size_t kernel_code_size;
-
-    void *kernel_stack;
-    size_t kernel_stack_size;
+void*phys_addr;
+void*virt_addr;
+size_t size;
 };
 
 struct kernel_arguments_t
@@ -19,7 +17,6 @@ struct kernel_arguments_t
     acpi_xsdp_t *xsdp;
 };
 
-void load_kernel(kernel_handle_t *handle, const char16_t *path);
-void jump_to_kernel(kernel_handle_t *handle, kernel_arguments_t *args);
+void jump_to_kernel(kernel_arguments_t *args);
 
 #endif

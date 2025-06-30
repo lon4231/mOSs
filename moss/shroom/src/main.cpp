@@ -6,10 +6,6 @@
 extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE img_handle, EFI_SYSTEM_TABLE *systab)
 {
     init_efi_services(systab, img_handle);
-
-    kernel_handle_t kernel_handle;
-    load_kernel(&kernel_handle, u"\\EFI\\BOOT\\kernel.elf");
-
     efi_cout_handle->ClearScreen(efi_cout_handle);
 
     kernel_arguments_t kernel_arguments = {nullptr};
@@ -31,11 +27,9 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE img_handle, EFI_SYSTEM_TABLE *s
         }
     }
 
-    jump_to_kernel(&kernel_handle, &kernel_arguments);
+    jump_to_kernel(&kernel_arguments);
 
-    while (true)
-    {
-    }
+    asm volatile("cli;hlt");
 
     return 0;
 }

@@ -6,34 +6,40 @@ rm:=rm -rf
 kernel_cc:=g++
 kernel_ld:=ld
 
-kernel_cflags:=-O3 -s
-kernel_ldflags:=
-kernel_includes:=
+kernel_cflags:=-O3 -s -e kmain -nostdlib -ffreestanding -mno-red-zone -fno-stack-protector
+kernel_ldflags:=-Tmoss/kernel/kernel.ld -e kmain -nostdlib
+kernel_includes:=-Imoss/arch -Imoss/kernel/inc
 
 kernel_src:=$(wildcard moss/kernel/*.cpp) $(wildcard moss/kernel/*/*.cpp)
 kernel_targets:=$(patsubst %.cpp,%.o,$(kernel_src))
-kernel_dtargets:=$(patsubst %.cpp,%.shroom,$(kernel_src))
+kernel_dtargets:=$(patsubst %.cpp,%.kernel,$(kernel_src))
 kernel_out:=kernel.elf
 
 shroom_cc:=x86_64-w64-mingw32-g++
-shroom_ld:=x86_64-w64-mingw32-ld
+shroom_gcc:=x86_64-w64-mingw32-gcc
 
 shroom_cflags:=-O3 -s -mno-red-zone -nostdlib -ffreestanding -fno-stack-protector -Wl,--subsystem,10
 shroom_ldflags:=-e efi_main -nostdlib
-shroom_includes:= -Imoss/shroom/inc -Imoss/shroom/inc/efi -Imoss/arch
+shroom_includes:= -Imoss/shroom/inc -Imoss/shroom/inc/printf -Imoss/shroom/inc/efi -Imoss/arch
 
-shroom_src:=$(wildcard moss/shroom/src/*.cpp) $(wildcard moss/shroom/src/*/*.cpp)
+shroom_src:=$(wildcard moss/shroom/src/*.cpp) 
+cshroom_src:=$(wildcard moss/shroom/src/*/*.c)
+
 shroom_targets:=$(patsubst %.cpp,%.o,$(shroom_src))
+cshroom_targets:=$(patsubst %.c,%.o,$(cshroom_src))
+
 shroom_dtargets:=$(patsubst %.cpp,%.shroom,$(shroom_src))
+cshroom_dtargets:=$(patsubst %.c,%.cshroom,$(cshroom_src))
+
 shroom_out:=BOOTX64.EFI
 
 image_name:=moss.hdd
 
 
 qemu:=qemu-system-x86_64
-qemu_bios:=-drive if=pflash,format=raw,readonly=on,file=/usr/share/ovmf/x64/OVMF.4m.fd
+qemu_bios:=-bios /usr/share/ovmf/x64/OVMF.4m.fd
 qemu_image:= -drive file=$(image_name),format=raw,if=ide
-qemu_flags:=-m 512M -M q35
+qemu_flags:=-m 512M -M q35 -display gtk,zoom-to-fit=off
 
 
 
@@ -64,12 +70,12 @@ test:
 # compile crap
 
 comp_kernel: $(kernel_dtargets)
-	$(kernel_ld) $(notdir $(kernel_targets)) -o $(kernel_out) $(kernel_cflags) $(kernel_includes) $(kernel_ldflags)
+	$(kernel_ld) $(notdir $(kernel_targets)) -o $(kernel_out) $(kernel_ldflags)
 	$(rm) $(notdir $(kernel_targets))
 
-comp_shroom: $(shroom_dtargets)
-	$(shroom_cc) $(notdir $(shroom_targets)) -o $(shroom_out) $(shroom_cflags) $(shroom_includes) $(shroom_ldflags)
-	$(rm) $(notdir $(shroom_targets))
+comp_shroom: $(shroom_dtargets) $(cshroom_dtargets)
+	$(shroom_cc) $(notdir $(shroom_targets) $(cshroom_targets)) -o $(shroom_out) $(shroom_cflags) $(shroom_includes) $(shroom_ldflags)
+	$(rm) $(notdir $(shroom_targets) $(cshroom_targets))
 
 
 %.kernel : %.cpp
@@ -78,3 +84,5 @@ comp_shroom: $(shroom_dtargets)
 %.shroom : %.cpp
 	$(shroom_cc) $*.cpp -o $(notdir $*.o) -c $(shroom_cflags) $(shroom_includes)
 
+%.cshroom : %.c
+	$(shroom_gcc) $*.c -o $(notdir $*.o) -c $(shroom_cflags) $(shroom_includes)

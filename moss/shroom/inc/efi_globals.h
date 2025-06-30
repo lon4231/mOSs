@@ -2,6 +2,7 @@
 #define _EFI_GLOBALS_DEFINED_
 
 #include <efi/efi.h>
+#include <printf/printf.h>
 
 extern EFI_SYSTEM_TABLE *efi_systab_handle;
 extern EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *efi_cout_handle;

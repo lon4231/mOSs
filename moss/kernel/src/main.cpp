@@ -1,9 +1,9 @@
 
 
 
-void kmain()
+extern "C" void kmain()
 {
 
 
-
+return;
 }

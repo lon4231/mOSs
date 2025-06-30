@@ -51,4 +51,14 @@ struct EFI_MEMORY_DESCRIPTOR
     UINT64 Attribute;
 };
 
+struct memory_map_info_t
+{
+    EFI_MEMORY_DESCRIPTOR *map;
+    UINTN size;
+    UINTN key;
+    UINT32 desc_version;
+    UINTN desc_size;
+    UINTN entry_count;
+};
+
 #endif

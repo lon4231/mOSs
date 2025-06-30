@@ -87,3 +87,27 @@ int memcmp(void *src1, void *src2, size_t size)
 
     return 0;
 }
+
+
+size_t strlen(const char*str)
+{
+const char*original=str;
+
+while(*str!=0)
+{str++;}
+
+return (size_t)(str-original);
+}
+
+int strcmp(const char*str0,const char*str1)
+{
+if(strlen(str0)!=strlen(str1)){return -1;}
+
+return memcmp((void*)str0,(void*)str1,strlen(str0));
+}
+
+int strncmp(const char*str0,const char*str1,size_t size)
+{
+
+return 1;
+}

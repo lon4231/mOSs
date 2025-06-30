@@ -5,6 +5,8 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <sys/types.h>
+
 
 #define IN
 #define OUT
@@ -12,8 +14,8 @@
 #define CONST const
 
 typedef uint8_t BOOLEAN;
-typedef int64_t INTN;
-typedef uint64_t UINTN;
+typedef ssize_t INTN;
+typedef size_t UINTN;
 typedef int8_t INT8;
 typedef uint8_t UINT8;
 typedef int16_t INT16;
