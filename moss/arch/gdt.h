@@ -55,4 +55,11 @@ struct gdt_t
     tss_entry_t tss_entry;
 };
 
+struct gdtr_t
+{
+    uint16_t limit;
+    uint64_t base;
+} __attribute__((packed));
+
+
 #endif

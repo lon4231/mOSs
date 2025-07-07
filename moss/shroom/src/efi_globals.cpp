@@ -12,15 +12,6 @@ EFI_LOADED_IMAGE_PROTOCOL* efi_loaded_image_protocol;
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *efi_fs_protocol_handle;
 EFI_HANDLE efi_image_handle;
 
-UINTN efi_graphics_output_protocol_count;
-EFI_GRAPHICS_OUTPUT_PROTOCOL **efi_graphics_output_protocol_handles;
-
-extern "C" void _putchar(char chr)
-{
-CHAR16 str[2]={(char16_t)chr,0};
-
-efi_cout_handle->OutputString(efi_cout_handle,str);
-}
 
 void *locate_efi_protocol(EFI_GUID guid)
 {

@@ -5,12 +5,7 @@
 #include <elf/elf.h>
 #include <arch.h>
 
-struct kernel_elf_section_t
-{
-void*phys_addr;
-void*virt_addr;
-size_t size;
-};
+#define SETUP_STACK_SIZE 4
 
 struct kernel_arguments_t
 {

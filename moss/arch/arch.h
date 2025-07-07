@@ -6,5 +6,6 @@
 #include <gdt.h>
 #include <idt.h>
 #include <page_tables.h>
+#include <asm_blocks.h>
 
 #endif
