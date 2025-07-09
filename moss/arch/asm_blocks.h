@@ -30,4 +30,6 @@
 
 #define SET_STACK(new_stack) asm volatile("movq %0, %%RSP"::"gm"(new_stack))
 
+#define OUTB(port,data) asm volatile("outb %b0, %w1" : : "a"(data), "Nd"(port) : "memory")
+
 #endif

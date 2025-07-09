@@ -145,6 +145,7 @@ void jump_to_kernel(kernel_arguments_t *args)
     SWITCH_GDT_SEG(0x8, 0x10);
 
     SET_STACK((uint64_t)kernel_stack + kernel_stack_size);
+
     asm volatile(
         "callq *%[entry]\n" ::
             [entry] "r"(elf_ehdr->e_entry),
