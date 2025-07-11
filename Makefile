@@ -42,7 +42,7 @@ image_name:=moss.hdd
 qemu:=qemu-system-x86_64
 qemu_bios:=-bios /usr/share/ovmf/x64/OVMF.4m.fd
 qemu_image:= -drive file=$(image_name),format=raw,if=ide
-qemu_flags:=-m 512M -M q35 -display none -serial stdio
+qemu_flags:=-m 512M -M q35 -display none -serial stdio -d int
 
 
 

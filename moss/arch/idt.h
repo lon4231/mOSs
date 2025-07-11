@@ -14,4 +14,16 @@ struct idt_entry_t
     uint32_t reserved;
 } __attribute__((packed));
 
+struct idt_t
+{
+idt_entry_t entries[256];
+};
+
+struct idtr_t
+{
+    uint16_t limit;
+    uint64_t base;
+} __attribute__((packed));
+
+
 #endif

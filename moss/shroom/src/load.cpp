@@ -9,6 +9,18 @@ void *kernel_file_buffer;
 
 alloc_handle_t alloc_handle;
 vmem_table_t vmm_handle;
+kernel_arguments_t *kargs;
+
+uint64_t hh_addr;
+
+void map_hh_continous(vmem_table_t *vmm, void *phys, uint64_t pages)
+{
+    for (uint64_t i = 0; i < pages; ++i)
+    {
+        map_page(vmm, phys, (void *)hh_addr, 0b111);
+        hh_addr += PAGE_SIZE;
+    }
+}
 
 EFI_FILE_INFO get_file_info(EFI_FILE_PROTOCOL *file)
 {
@@ -53,6 +65,11 @@ void get_mmap(memory_map_info_t *mmap)
     mmap->entry_count = (mmap->size / mmap->desc_size);
 }
 
+void build_boot_mmap()
+{
+    memory_map_info_t *mmap = &alloc_handle.mmap;
+}
+
 void jump_to_kernel(kernel_arguments_t *args)
 {
     gdt_t gdt;
@@ -61,12 +78,28 @@ void jump_to_kernel(kernel_arguments_t *args)
     void *kernel_stack;
     uint64_t kernel_stack_size;
 
+    kargs = args;
+
     load_kernel(u"\\EFI\\BOOT\\kernel.elf");
 
     Elf64_Ehdr *elf_ehdr = (Elf64_Ehdr *)kernel_file_buffer;
     Elf64_Shdr *elf_shdrs = (Elf64_Shdr *)(((uint8_t *)kernel_file_buffer) + elf_ehdr->e_shoff);
     Elf64_Phdr *elf_phdrs = (Elf64_Phdr *)(((uint8_t *)kernel_file_buffer) + elf_ehdr->e_phoff);
     char *elf_strtab = ((char *)kernel_file_buffer + elf_shdrs[elf_ehdr->e_shstrndx].sh_offset);
+
+    hh_addr = 0;
+    for (UINTN i = 0; i < elf_ehdr->e_phnum; ++i)
+    {
+        if (elf_phdrs[i].p_type != PT_LOAD)
+            continue;
+
+        if (hh_addr < elf_phdrs[i].p_vaddr)
+        {
+            hh_addr = elf_phdrs[i].p_vaddr;
+        }
+    }
+
+    /*SEPARATOR*/
 
     get_mmap(&alloc_handle.mmap);
 
@@ -78,13 +111,17 @@ void jump_to_kernel(kernel_arguments_t *args)
     for (UINTN i = 0; i < alloc_handle.mmap.entry_count; ++i)
     {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR *)(((uint8_t *)alloc_handle.mmap.map) + (i * alloc_handle.mmap.desc_size));
-        for (UINT64 n = 0; n < desc->NumberOfPages; ++n)
+
+        if ((desc->Type == EfiLoaderCode) || (desc->Type == EfiLoaderData) || (desc->Type == EfiBootServicesCode) || (desc->Type == EfiBootServicesData) || (desc->Type == EfiConventionalMemory))
         {
-            map_page(&vmm_handle, (void *)(desc->PhysicalStart + (n * PAGE_SIZE)), (void *)(desc->PhysicalStart + (n * PAGE_SIZE)), 0b111);
+            for (UINT64 n = 0; n < desc->NumberOfPages; ++n)
+            {
+                map_page(&vmm_handle, (void *)(desc->PhysicalStart + (n * PAGE_SIZE)), (void *)(desc->PhysicalStart + (n * PAGE_SIZE)), 0b111);
+            }
         }
     }
 
-    asm volatile("mov %0, %%cr3" ::"r"(vmm_handle.pml4) : "memory");
+    build_boot_mmap();
 
     for (UINTN i = 0; i < elf_ehdr->e_phnum; ++i)
     {
@@ -92,15 +129,18 @@ void jump_to_kernel(kernel_arguments_t *args)
         if (elf_phdrs[i].p_type != PT_LOAD)
             continue;
 
+        uint64_t to_write = elf_phdrs[i].p_filesz;
         for (uint64_t n = 0; n < SIZE_TO_PAGES(elf_phdrs[i].p_memsz); ++n)
         {
             void *new_page = alloc_page(&alloc_handle);
             memset(new_page, 0, PAGE_SIZE);
 
-            map_page(&vmm_handle, new_page, (void *)(elf_phdrs[i].p_vaddr + (n * PAGE_SIZE)), 0b111);
+            memcpy(new_page, (void *)((uint64_t)kernel_file_buffer + elf_phdrs[i].p_offset + (elf_phdrs[i].p_filesz - to_write)), (to_write > PAGE_SIZE) ? PAGE_SIZE : to_write);
+            (to_write > PAGE_SIZE) ? (to_write -= PAGE_SIZE) : (to_write = 0);
+
+            map_hh_continous(&vmm_handle, new_page, 1);
         }
 
-        memcpy((void *)elf_phdrs[i].p_vaddr, (void *)((uint64_t)kernel_file_buffer + elf_phdrs[i].p_offset), elf_phdrs[i].p_filesz);
         kernel_stack_size = (elf_phdrs[i].p_vaddr + (SIZE_TO_PAGES(elf_phdrs[i].p_memsz) * PAGE_SIZE));
     }
 
@@ -109,9 +149,19 @@ void jump_to_kernel(kernel_arguments_t *args)
         void *new_page = alloc_page(&alloc_handle);
         memset(new_page, 0, PAGE_SIZE);
 
-        map_page(&vmm_handle, new_page, (void *)(kernel_stack_size + (i * PAGE_SIZE)), 0b111);
+        map_hh_continous(&vmm_handle, new_page, 1);
     }
     kernel_stack_size = SETUP_STACK_SIZE * PAGE_SIZE;
+    
+    for (UINTN i = 0; i < alloc_handle.mmap.entry_count; ++i)
+    {
+        EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR *)(((uint8_t *)alloc_handle.mmap.map) + (i * alloc_handle.mmap.desc_size));
+
+        if (desc->Type == EfiConventionalMemory)
+        {
+            map_hh_continous(&vmm_handle,(void*)desc->PhysicalStart,desc->NumberOfPages);
+        }
+    }
 
     gdt =
         {
@@ -139,16 +189,14 @@ void jump_to_kernel(kernel_arguments_t *args)
 
     asm volatile("cli\n");
 
+    SET_CR3(vmm_handle.pml4);
     SET_GDT(gdtr);
     SET_TSS(0x28);
-
     SWITCH_GDT_SEG(0x8, 0x10);
-
     SET_STACK((uint64_t)kernel_stack + kernel_stack_size);
 
     asm volatile(
         "callq *%[entry]\n" ::
             [entry] "r"(elf_ehdr->e_entry),
         "c"(args));
-
 }

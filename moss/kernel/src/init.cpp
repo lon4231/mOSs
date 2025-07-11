@@ -4,7 +4,12 @@
 gdt_t gdt;
 gdtr_t gdtr;
 
+idt_t idt;
+idtr_t idtr;
+
 tss_t tss;
+
+
 
 inline __attribute__((always_inline)) void setup_gdt()
 {
@@ -35,10 +40,25 @@ inline __attribute__((always_inline)) void setup_gdt()
     SET_GDT(gdtr);
     SET_TSS(0x28);
 
-    printf("GDT... OK?\r\n");
+    printf("GDT... OK\r\n");
+}
+
+inline __attribute__((always_inline)) void setup_idt()
+{
+
+
+idtr.base=(uint64_t)&idt;
+idtr.limit=sizeof(idt_t)-1;
+
+SET_IDT(idtr);
+
+asm volatile("sti");
+
+printf("IDT... OK\r\n");
 }
 
 void kernel_init()
 {
-setup_gdt();
+    setup_gdt();
+    setup_idt();
 }
